@@ -172,6 +172,24 @@ We can also work on making errors more user friendly and helpful. If anyone uses
 
 If you want a feature, go create an issue (or even a pull request). If it doesn't work for you or you're having errors with it - go create an issue, again.
 
+### More on Babel
+
+If you are using Webpack (like me) then the loader configuration would look like
+
+```js
+{
+  // .js and .jsx
+  test: /\.jsx?$/,
+  // exclude: /(node_modules|bower_components)/,
+  include: 
+  [
+    path.resolve(__dirname, 'sources/client'),
+    path.resolve(__dirname, 'node_modules', 'react-styling')
+  ],
+  loader: 'babel'
+},
+```
+
 ## License
 
 [MIT](LICENSE)
