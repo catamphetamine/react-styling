@@ -17,7 +17,7 @@ Then I saw that presentation by Christopher "vjeux" Chedeau
 
 And I was again like "ummm, I'm not sure... do we really need to write our styles here too? what about web-designers?"
 
-[React.js Conf 2015 Keynote 2 - A Deep Dive into React Native, 9:14(https://www.youtube.com/watch?v=7rDsRXj9-cU#t=554)
+[React.js Conf 2015 Keynote 2 - A Deep Dive into React Native, 9:14](https://www.youtube.com/watch?v=7rDsRXj9-cU#t=554)
 
 And now, as you've already guessed, I'm writing my styles inline in my React components and I like it.
 
