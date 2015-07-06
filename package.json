@@ -1,0 +1,33 @@
+{
+  "name": "react-styling",
+  "version": "1.0.1",
+  "description": "Transforms CSS-alike text into a React style JSON object",
+  "main": "index.js",
+  "devDependencies": {
+    "babel": "^5.6.14",
+    "chai": "^3.0.0",
+    "istanbul": "^0.3.17",
+    "mocha": "^2.2.5"
+  },
+  "scripts": {
+    "test": "mocha --compilers js:babel/register --bail --reporter spec test/",
+    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot test/",
+    "test-travis": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec test/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/halt-hammerzeit/react-style.git"
+  },
+  "keywords": [
+    "react",
+    "style",
+    "inline",
+    "css"
+  ],
+  "author": "Nikolay Kuchumov <kuchumovn@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/halt-hammerzeit/react-styler/issues"
+  },
+  "homepage": "https://github.com/halt-hammerzeit/react-styler#readme"
+}
