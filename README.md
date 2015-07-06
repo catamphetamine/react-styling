@@ -43,7 +43,7 @@ To use it, you can either use ES6 in your application, or you can use Babel (whi
 Then you write your styles using just tabulation and CSS syntax.
 
 ```js
-import styler from 'react-styler'
+import styler from 'react-styling'
 
 export default class Page extends React.Component
 {
