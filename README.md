@@ -196,6 +196,29 @@ const style = styler
 `
 ```
 
+You can also use YAML-alike syntax if you're one of those Python people
+
+```js
+const style = styler
+`
+  menu:
+    list-style-type: none
+
+    item:
+      display: inline-block
+
+      link:
+        display         : inline-block
+        text-decoration : none
+        color           : #000000
+
+        padding-left    : 0.4em
+        padding-right   : 0.4em
+        padding-top     : 0.2em
+        padding-bottom  : 0.2em
+`
+```
+
 ### What's next
 
 I can add the features you want (or you can do it). I can cover it with tests (or you can do it). I could optimize it, etc.

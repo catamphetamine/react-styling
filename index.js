@@ -66,7 +66,7 @@ function extend(to, from, or_more)
 }
 
 // decide whether it's tabs or spaces
-function calculate_tab_width(lines)
+function determine_tabulation(lines)
 {
 	const substract = pair => pair[0] - pair[1]
 
@@ -77,8 +77,10 @@ function calculate_tab_width(lines)
 		return counter
 	}
 
+	// take all meaningful lines
 	lines = lines.filter(line => !is_blank(line))
 
+	// has to be at least two of them
 	if (lines.length < 2)
 	{
 		throw new Error(`Couldn't decide on tabulation type. Not enough lines.`)
@@ -87,10 +89,16 @@ function calculate_tab_width(lines)
 	// if we're using tabs for tabulation
 	if (starts_with(lines[1], '\t'))
 	{
-		return null
+		const tab = 
+		{
+			symbol: '\t',
+			regexp: new RegExp(`^(\t)+`, 'g')
+		}
+
+		return tab
 	}
 
-	// take the first two meaningful lines,
+	// take the first two lines,
 	// calculate their indentation,
 	// substract it and you've got the tab width
 	const tab_width = Math.abs(substract(
@@ -104,7 +112,15 @@ function calculate_tab_width(lines)
 		throw new Error(`Couldn't decide on tabulation type. Invalid tabulation.`)
 	}
 
-	return tab_width
+	const symbol = repeat(' ', tab_width)
+
+	const spaced_tab = 
+	{
+		symbol: symbol,
+		regexp: new RegExp(`^(${symbol})+`, 'g')
+	}
+
+	return spaced_tab
 }
 
 // converts text to JSON object
@@ -115,6 +131,67 @@ function parse_json_object(text)
 	text = text.replace(/[\{\}]/g, '')
 
 	return parse_lines(text.split('\n'))
+}
+
+class Node
+{
+	constructor(name)
+	{
+		this.name = name
+		this.lines = []
+		this.styles = []
+	}
+
+	// parse lines (using styles) into a JSON object with child nodes of this child node
+	json()
+	{
+		const object = {}
+
+		// add own styles
+		const own_style = {}
+		for (let style of this.styles)
+		{
+			const parts = style.split(':')
+
+			let key     = parts[0].trim()
+			const value = parts[1].trim()
+
+			// transform dashed key to camelCase key (it's required by React)
+			key = key.replace(/([-]{1}[a-z]{1})/g, character => character.substring(1).toUpperCase())
+
+			own_style[key] = value
+		}
+
+		// apply the style to the object itself
+		extend(object, own_style)
+
+		// process child lines recursively
+		const children = parse_lines(this.lines)
+
+		// detect and expand modifier style classes
+		Object.keys(children).filter(name => starts_with(name, '.')).forEach(function(name)
+		{
+			// remove the leading dot from the name
+			children[name.substring('.'.length)] = extend({}, own_style, children[name])
+			delete children[name]
+		})
+
+		// add children to the parent
+		extend(object, children)
+
+		// end this block
+		return object
+	}
+
+	add_style(style)
+	{
+		this.styles.push(style)
+	}
+
+	add_line(line)
+	{
+		this.lines.push(line)
+	}
 }
 
 function parse_lines(lines)
@@ -132,108 +209,29 @@ function parse_lines(lines)
 		return parse_lines(lines)
 	}
 
-	const children = {}
-
-	let child_name
-	let child_lines
-	let own_styles
-
-	function start_child(name)
-	{
-		child_name = name
-		child_lines = []
-		own_styles = []
-	}
-
-	function finish_child(object)
-	{
-		if (object)
-		{
-			children[child_name] = object
-		}
-
-		child_name = null
-		child_lines = null
-		own_styles = null
-	}
-
-	function finish()
-	{
-		const object = {}
-
-		// add own styles
-		const own_style = {}
-		for (let style of own_styles)
-		{
-			const key = style.substring(0, style.indexOf(':')).trim()
-			const value = style.substring(style.indexOf(':') + 1).trim()
-
-			// transform dashed key to camelCase key (it's required by React)
-			const canonical_key = key.replace(/([-]{1}[a-z]{1})/g, character => character.substring(1).toUpperCase())
-
-			own_style[canonical_key] = value
-		}
-
-		// apply the style to the object itself
-		extend(object, own_style)
-
-		// process child lines recursively
-		extend(object, parse_lines(child_lines))
-
-		// detect and expand modifier style classes
-		for (let key of Object.keys(object))
-		{
-			// expand modifier style classes
-			if (starts_with(key, '.'))
-			{
-				object[key.substring('.'.length)] = extend({}, own_style, object[key])
-				delete object[key]
-			}
-		}
-
-		// end this block
-		finish_child(object)
-	}
-
-	// initialize variables
-	finish_child()
-
-	// what is the tab symbol
-	function tab_symbol()
-	{
-		if (tab_width === null)
-		{
-			return '\t'
-		}
-		else
-		{
-			return repeat(' ', tab_width)
-		}
-	}
-
 	// has tab in the beginning
-	const is_tabulated = line => starts_with(line, tab)
+	const is_tabulated = line => starts_with(line, tab.symbol)
 
 	// add one tab in the beginning
-	const tablulate = line => tab + line
+	const tablulate = line => tab.symbol + line
 
 	// remove some tabs in the beginning
-	const reduce_tabulation = (line, how_much) => line.substring(tab.length * how_much)
+	const reduce_tabulation = (line, how_much) => line.substring(tab.symbol.length * how_much)
 
 	// remove one tab in the beginning
 	const chop_one_tab_off = (line) => reduce_tabulation(line, 1)
 
+	// how many "tabs" are there before content of this line
 	function calculate_indentation(line)
 	{
-		// count current line indentation level
-		let line_indentation = 0
-		while (is_tabulated(line))
+		const matches = line.match(tab.regexp)
+
+		if (!matches)
 		{
-			line_indentation++
-			line = chop_one_tab_off(line)
+			return 0
 		}
 
-		return line_indentation
+		return matches[0].length / tab.symbol.length
 	}
 
 	function normalize_initial_tabulation(lines)
@@ -260,25 +258,75 @@ function parse_lines(lines)
 		return lines
 	}
 
-	function process_meaningful_line(line, line_indentation, original_line)
+	const tab = determine_tabulation(lines)
+	lines = normalize_initial_tabulation(lines)
+
+	// last intentation level
+	let previous_indendation = 0
+	let child
+
+	const nodes = {}
+
+	function finalize_child_node()
 	{
-		// validate current line intendation level
-		if (line_indentation !== 1 && line_indentation < previous_indendation - 1 || line_indentation > previous_indendation + 1)
+		nodes[child.name] = child.json()
+		child = null
+	}
+
+	lines.filter(function(line)
+	{
+		// ignore blank lines,
+		// ignore single line comments (//)
+		return !is_blank(line) && !line.match(/^[\s]*\/\//)
+	})
+	.map(function(line)
+	{
+		let original_line = line
+
+		// count current line indentation level
+		let indentation = 0
+		while (is_tabulated(line))
 		{
-			throw new Error(`Invalid indentation (${line_indentation} tabs after ${previous_indendation} tabs for parent) at line #${line_index}: "${original_line}"`)
-			// throw new Error(`Invalid indentation at line: ${line}. line_indentation: ${line_indentation}, previous_indendation: ${previous_indendation}`)
+			indentation++
+			line = chop_one_tab_off(line)
 		}
 
+		// check for messed up tabulation
+		if (starts_with(line, ' '))
+		{
+			// #${line_index}
+			throw new Error(`Invalid tabulation (some extra leading spaces) at line: "${line}"`)
+		}
+
+		// remove any trailing whitespace
+		line = line.trim()
+
+		const result = 
+		{
+			line          : line,
+			original_line : original_line,
+			indentation   : indentation
+		}
+
+		return result
+	})
+	.forEach(function(line_data)
+	{
+		let line = line_data.line
+		const original_line = line_data.original_line
+		const indentation = line_data.indentation
+
 		// if the indentation level is 1, then it's the start of a new block
-		if (line_indentation === 1)
+		if (indentation === 1)
 		{
 			// if there is a previously started block - finish it
-			if (child_name)
+			if (child)
 			{
-				finish()
+				finalize_child_node()
 			}
 
 			// if someone forgot a trailing colon in the style class name - trim it
+			// (or maybe these are Python people)
 			if (ends_with(line, ':'))
 			{
 				line = line.substring(0, line.length - ':'.length)
@@ -286,75 +334,38 @@ function parse_lines(lines)
 			}
 
 			// start a new block for this style class
-			start_child(line)
+			child = new Node(line)
 		}
 		else
 		{
+			const colon_index = line.indexOf(':')
+			const seems_like_css = colon_index > 0 && colon_index < line.length - 1
+
 			// if it's a generic style for this style class - 
 			// simply add it to the styles array and continue the cycle
-			if (line_indentation === 2 && line.indexOf(':') >= 0 && !starts_with(line, ':') && !starts_with(line, '@'))
+			if (indentation === 2 && seems_like_css && !starts_with(line, '@'))
 			{
-				own_styles.push(line)
+				child.add_style(line)
 			}
 			else
 			{
 				// if it's not a generic style, then it's a descendant node
-				child_lines.push(chop_one_tab_off(original_line))
+				child.add_line(chop_one_tab_off(original_line))
 			}
 		}
 
 		// update the will-be-previous indentation level
-		previous_indendation = line_indentation
-	}
+		previous_indendation = indentation
+	})
 
-	const tab_width = calculate_tab_width(lines)
-	const tab = tab_symbol()
-
-	lines = normalize_initial_tabulation(lines)
-
-	// last intentation level
-	let line_index = 1
-	let previous_indendation = 0
-	for (let line of lines)
+	// if there is a previously started block - finish it
+	if (child)
 	{
-		// console.log(line)
-		
-		let original_line = line
-
-		// count current line indentation level
-		let line_indentation = 0
-		while (is_tabulated(line))
-		{
-			line_indentation++
-			line = chop_one_tab_off(line)
-		}
-
-		// check for messed up tabulation
-		if (starts_with(line, ' '))
-		{
-			throw new Error(`Invalid tabulation (some extra leading spaces) at line #${line_index}: "${line}"`)
-		}
-
-		line = line.trim()
-
-		// ignore blank lines
-		// ignore comments
-		if (line && !starts_with(line, '//'))
-		{
-			process_meaningful_line(line, line_indentation, original_line)
-		}
-
-		// if it's the last line - close the block
-		if (line_index === lines.length)
-		{
-			finish()
-		}
-
-		line_index++
+		finalize_child_node()
 	}
 
 	// done
-	return children
+	return nodes
 }
 
 // using ES6 template strings
