@@ -261,37 +261,24 @@ function parse_lines(lines)
 	const tab = determine_tabulation(lines)
 	lines = normalize_initial_tabulation(lines)
 
-	// last intentation level
-	let previous_indendation = 0
-	let child
-
 	const nodes = {}
 
-	function finalize_child_node()
-	{
-		nodes[child.name] = child.json()
-		child = null
-	}
+	// to do: start later refactoring from here
 
-	lines.filter(function(line)
+	lines = lines.filter(function(line)
 	{
 		// ignore blank lines,
 		// ignore single line comments (//)
 		return !is_blank(line) && !line.match(/^[\s]*\/\//)
 	})
-	.map(function(line)
+	.map(function(line, index)
 	{
 		let original_line = line
 
-		// count current line indentation level
-		let indentation = 0
-		while (is_tabulated(line))
-		{
-			indentation++
-			line = chop_one_tab_off(line)
-		}
+		const indentation = calculate_indentation(line)
+		line = reduce_tabulation(line, indentation)
 
-		// check for messed up tabulation
+		// check for messed up space tabulation
 		if (starts_with(line, ' '))
 		{
 			// #${line_index}
@@ -304,65 +291,101 @@ function parse_lines(lines)
 		const result = 
 		{
 			line          : line,
+			index         : index,
 			original_line : original_line,
 			indentation   : indentation
 		}
 
 		return result
 	})
-	.forEach(function(line_data)
+
+	const node_entry_lines = lines.filter(line_data => line_data.indentation === 1)
+
+	const from_to = node_entry_lines.reduce(function(from_tos, node)
 	{
-		let line = line_data.line
-		const original_line = line_data.original_line
-		const indentation = line_data.indentation
-
-		// if the indentation level is 1, then it's the start of a new block
-		if (indentation === 1)
+		if (from_tos.length === 0)
 		{
-			// if there is a previously started block - finish it
-			if (child)
-			{
-				finalize_child_node()
-			}
-
-			// if someone forgot a trailing colon in the style class name - trim it
-			// (or maybe these are Python people)
-			if (ends_with(line, ':'))
-			{
-				line = line.substring(0, line.length - ':'.length)
-				// throw new Error(`Remove the trailing colon at line: ${original_line}`)
-			}
-
-			// start a new block for this style class
-			child = new Node(line)
+			from_tos.push([0, node.index])
 		}
 		else
 		{
-			const colon_index = line.indexOf(':')
-			const seems_like_css = colon_index > 0 && colon_index < line.length - 1
+			from_tos.push([from_tos[from_tos.length - 1][1], node.index])
+		}
 
-			// if it's a generic style for this style class - 
-			// simply add it to the styles array and continue the cycle
-			if (indentation === 2 && seems_like_css && !starts_with(line, '@'))
+		return from_tos
+	}, 
+	[])
+
+	let node_blocks
+
+	if (from_to.length > 1)
+	{
+		from_to.shift()
+		from_to.push([from_to[from_to.length - 1][1], lines.length])
+
+		if (node_entry_lines.length > 1)
+		{
+			node_blocks = from_to.map(from_to => lines.slice(from_to[0], from_to[1]))
+		}
+	}
+	else
+	{
+		node_blocks = [lines]
+	}
+
+	const child_nodes = node_blocks.map(function(lines)
+	{
+		let previous_indendation = 0
+		let child
+			
+		lines.forEach(function(line_data)
+		{
+			let line = line_data.line
+			const original_line = line_data.original_line
+			const indentation = line_data.indentation
+
+			// if the indentation level is 1, then it's the start of a new block
+			if (indentation === 1)
 			{
-				child.add_style(line)
+				// if someone forgot a trailing colon in the style class name - trim it
+				// (or maybe these are Python people)
+				if (ends_with(line, ':'))
+				{
+					line = line.substring(0, line.length - ':'.length)
+					// throw new Error(`Remove the trailing colon at line: ${original_line}`)
+				}
+
+				// start a new block for this style class
+				child = new Node(line)
 			}
 			else
 			{
-				// if it's not a generic style, then it's a descendant node
-				child.add_line(chop_one_tab_off(original_line))
+				const colon_index = line.indexOf(':')
+				const seems_like_css = colon_index > 0 && colon_index < line.length - 1
+
+				// if it's a generic style for this style class - 
+				// simply add it to the styles array and continue the cycle
+				if (indentation === 2 && seems_like_css && !starts_with(line, '@'))
+				{
+					child.add_style(line)
+				}
+				else
+				{
+					// if it's not a generic style, then it's a descendant node
+					child.add_line(chop_one_tab_off(original_line))
+				}
 			}
-		}
 
-		// update the will-be-previous indentation level
-		previous_indendation = indentation
+			// update the will-be-previous indentation level
+			previous_indendation = indentation
+		})
+
+		return { name: child.name, json: child.json() }
 	})
-
-	// if there is a previously started block - finish it
-	if (child)
+	.forEach(function(child)
 	{
-		finalize_child_node()
-	}
+		nodes[child.name] = child.json
+	})
 
 	// done
 	return nodes
