@@ -93,6 +93,12 @@ const style = styler
         .current
           color            : #ffffff
           background-color : #000000
+
+        @media (min-width: 320px)
+          width: 100%
+
+          :hover 
+            background: white
 `
 ```
 
@@ -130,6 +136,16 @@ The CSS text in the example above will be transformed to this JSON object
           paddingRight    : '0.4em',
           paddingTop      : '0.2em',
           paddingBottom   : '0.2em',
+        },
+
+        '@media (min-width: 320px)': 
+        {
+          width: '100%',
+
+          ':hover': 
+          {
+            background: 'white'
+          }
         }
       }
     }
@@ -165,6 +181,14 @@ const style = styler
         .current {
           color            : #ffffff
           background-color : #000000
+        }
+
+        @media (min-width: 320px) {
+          width: 100%
+
+          :hover {
+            background: white
+          }
         }
       }
     }

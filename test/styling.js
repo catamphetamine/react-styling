@@ -111,6 +111,14 @@ describe('styler', function()
 							color            : #ffffff
 							background-color : #000000
 						}
+
+						@media (min-width: 320px) {
+							width: 100%
+
+							:hover {
+								background: white
+							}
+						}
 					}
 				}
 			}
@@ -146,6 +154,16 @@ describe('styler', function()
 							paddingRight    : '0.4em',
 							paddingTop      : '0.2em',
 							paddingBottom   : '0.2em',
+						},
+
+						'@media (min-width: 320px)': 
+						{
+							width: '100%',
+
+							':hover': 
+							{
+								background: 'white'
+							}
 						}
 					}
 				}
