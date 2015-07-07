@@ -35,7 +35,7 @@ It allows you to (citation):
   * Keyframes animation helper
   * ES6 class and createClass support
 
-And you can use this module with this Radium thing too: write you styles in text, then transform the text using react-styling into a JSON object, and then use that JSON object with Radium, and it will work. If you opt in to use the "modifiers" feature of this module then you won't have to write style={[style.a, style.a.b]}, you can just write style={style.b}.
+And you can use this module with this Radium thing too: write you styles in text, then transform the text using react-styling into a JSON object, and then use that JSON object with Radium, and it will work. If you opt in to use the "modifiers" feature of this module then you won't have to write `style={[style.a, style.a.b]}`, you can just write `style={style.b}`.
 
 ## Installation
 
@@ -102,7 +102,7 @@ const style = styler
 `
 ```
 
-The example is self-explanatory. Notice the dot before the "current" class - this feature is optional (you don't need to use it at all), and it means that this style class is a "modifier" and all the default style (in this case, all the paddings, etc) will be included in this style class so that you don't need to do manual merging like style="extend({}, style.menu.item.link, style.menu.item.link.current)".
+The example is self-explanatory. Notice the dot before the "current" class - this feature is optional (you don't need to use it at all), and it means that this style class is a "modifier" and all the default style (in this case, all the paddings, etc) will be included in this style class so that you don't need to do manual merging like `style="extend({}, style.menu.item.link, style.menu.item.link.current)"`.
 
 The CSS text in the example above will be transformed to this JSON object
 
@@ -198,13 +198,13 @@ const style = styler
 
 ### What's next
 
-I can add the features you want (or you can do it). I can cover it with tests (or you can do it).
+I can add the features you want (or you can do it). I can cover it with tests (or you can do it). I could optimize it, etc.
 
-We can also work on making errors more user friendly and helpful. If anyone uses this module.
+I can also work on making errors more user friendly and helpful if anyone else uses this module.
 
 If you want a feature, go create an issue (or even a pull request). If it doesn't work for you or you're having errors with it - go create an issue, again.
 
-### More on Babel
+### Webpack
 
 If you are using Webpack (like me) then the loader configuration would look like
 
@@ -221,6 +221,8 @@ If you are using Webpack (like me) then the loader configuration would look like
   loader: 'babel'
 },
 ```
+
+Maybe I could also write a webpack loader to perform text-to-json conversion at compile time as opposed to run time.
 
 ## License
 
