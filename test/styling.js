@@ -28,6 +28,12 @@ describe('styler', function()
 						.current
 							color            : #ffffff
 							background-color : #000000
+
+						@media (min-width: 320px)
+							width: 100%
+
+							:hover 
+								background: white
 		`
 
 		const object =
@@ -60,6 +66,16 @@ describe('styler', function()
 							paddingTop      : '0.2em',
 							paddingBottom   : '0.2em',
 							backgroundColor : '#000000'
+						},
+
+						'@media (min-width: 320px)': 
+						{
+							width: '100%',
+
+							':hover': 
+							{
+								background: 'white'
+							}
 						}
 					}
 				}
@@ -90,9 +106,6 @@ describe('styler', function()
 						padding-top     : 0.2em
 						padding-bottom  : 0.2em
 
-						:radium
-							display: table
-
 						.current
 						{
 							color            : #ffffff
@@ -122,11 +135,6 @@ describe('styler', function()
 						paddingRight   : '0.4em',
 						paddingTop     : '0.2em',
 						paddingBottom  : '0.2em',
-
-						':radium':
-						{
-							display: 'table'
-						},
 
 						current:
 						{

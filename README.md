@@ -25,9 +25,17 @@ But still it was a bit of a hassle: you have your muscular memory of writing CSS
 
 So I wrote this little module. All it does is it takes your CSS-alike text and transforms it to a valid JSON style object for your React components. It's simple and tiny. It's unobtrusive and unopinionated (if you think it is - go create an issue or a pull request).
 
-There is also some ["Radium"](https://github.com/FormidableLabs/radium) thing on the internets.
-You can use this module with that Radium too: write you styles in text, then transform the text
-using react-styling into a JSON object, and then use that JSON object with that Radium thing.
+There is also this [Radium](https://github.com/FormidableLabs/radium) thing on the internets.
+It allows you to (citation):
+
+  * Conceptually simple extension of normal inline styles
+  * Browser state styles to support :hover, :focus, and :active
+  * Media queries
+  * Automatic vendor prefixing
+  * Keyframes animation helper
+  * ES6 class and createClass support
+
+And you can use this module with this Radium thing too: write you styles in text, then transform the text using react-styling into a JSON object, and then use that JSON object with Radium, and it will work. If you opt in to use the "modifiers" feature of this module then you won't have to write style={[style.a, style.a.b]}, you can just write style={style.b}.
 
 ## Installation
 

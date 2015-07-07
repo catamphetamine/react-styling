@@ -39,7 +39,7 @@ function extend(to, from, or_more)
 	{
 		const last = parameters.pop()
 		const intermediary_result = extend.apply(this, parameters)
-		// pass null as the third argument because of either Babel.js bug, or some other bug
+		// pass undefined as the third argument because of either Babel.js bug, or some other bug
 		// (the third argument is supplied and is equal to the second argument which is weird)
 		return extend(intermediary_result, last, undefined)
 	}
@@ -292,7 +292,7 @@ function parse_json_object(text)
 		{
 			// if it's a generic style for this style class - 
 			// simply add it to the styles array and continue the cycle
-			if (line_indentation === 2 && line.indexOf(':') >= 0 && !starts_with(line, ':'))
+			if (line_indentation === 2 && line.indexOf(':') >= 0 && !starts_with(line, ':') && !starts_with(line, '@'))
 			{
 				own_styles.push(line)
 			}
