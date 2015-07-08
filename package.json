@@ -24,7 +24,7 @@
     "deploy-gh-pages": "TARGET=gh-pages node ./config/deploy-gh-pages.js",
     "build": "TARGET=build webpack && TARGET=build-minified webpack",
     "build-modules": "babel ./source --out-dir ./build-modules",
-    "preversion": "npm run test && npm run build && npm run build-modules && git commit -am \"Update build\""
+    "preversion": "npm run test && npm run build && npm run build-modules && git commit --all --message=\"Update build\""
   },
   "repository": {
     "type": "git",
@@ -41,5 +41,7 @@
   "bugs": {
     "url": "https://github.com/halt-hammerzeit/react-styler/issues"
   },
-  "homepage": "https://github.com/halt-hammerzeit/react-styler#readme"
+  "homepage": "https://github.com/halt-hammerzeit/react-styler#readme",
+  "// npm config and webpack config was adopted from this guide": "http://survivejs.com/webpack_react/authoring_libraries/",
+  "// npm config and webpack config was adopted from this repo": "https://github.com/survivejs/react-component-boilerplate/"
 }
