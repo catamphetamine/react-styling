@@ -28,7 +28,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/halt-hammerzeit/react-style.git"
+    "url": "git+https://github.com/halt-hammerzeit/react-styling.git"
   },
   "keywords": [
     "react",
@@ -39,9 +39,9 @@
   "author": "Nikolay Kuchumov <kuchumovn@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/halt-hammerzeit/react-styler/issues"
+    "url": "https://github.com/halt-hammerzeit/react-styling/issues"
   },
-  "homepage": "https://github.com/halt-hammerzeit/react-styler#readme",
+  "homepage": "https://github.com/halt-hammerzeit/react-styling#readme",
   "// npm config and webpack config was adopted from this guide": "http://survivejs.com/webpack_react/authoring_libraries/",
   "// npm config and webpack config was adopted from this repo": "https://github.com/survivejs/react-component-boilerplate/"
 }
