@@ -54,13 +54,6 @@ $ npm install react-styling
 
 ## Usage
 
-This module is written in ES6, so if you are using ES6 in your project too then you can `import` it as is.
-There's a tool called Babel which transplies your ES6/ES7 code into the old ES5 syntax so that it will work in all web browsers.
-
-Otherwise, if you still prefer to use the old ES5 syntax in your projects then there's a precompiled ES5 version for you in the `build` folder called `react-styling.js` (along with the minified version called `react-styling.minified.js`).
-
-After you `import` (or `require`) react-styling into your React component code then you write your styles using just tabulation and CSS syntax.
-
 ```js
 import React from 'react'
 import styler from 'react-styling'
@@ -241,7 +234,7 @@ If you want a feature, go create an issue (before making a pull request). If it 
 
 ### Webpack
 
-If you are using Webpack with Babel (like me and like the rest of the world does) then the loader configuration for javascript would look like
+If you are using Webpack with Babel (like I do and like the rest of the world does) then the loader configuration for javascript would look like
 
 ```js
 {
@@ -269,6 +262,8 @@ sudo npm install --global babel
 ```
 
 Then you do your usual `npm install` and then everything should work.
+
+This module is written entirely in ES6.
 
 ## License
 
