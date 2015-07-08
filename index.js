@@ -36,6 +36,15 @@ function is_blank(text)
 	return !text.replace(/\s/g, '')
 }
 
+// zips two arrays
+function zip(a, b)
+{
+	return a.map(function(_, index) 
+	{
+		return [a[index], b[index]]
+	})
+}
+
 // extends the first object with 
 function extend(to, from, or_more)
 {
@@ -65,8 +74,140 @@ function extend(to, from, or_more)
 	return to
 }
 
+// converts text to JSON object
+function parse_json_object(text)
+{
+	// ignore opening curly braces for now.
+	// maybe support curly braces along with tabulation in future
+	text = text.replace(/[\{\}]/g, '')
+
+	return parse_lines(text.split('\n'))
+}
+
+// a node in style JSON object
+class Node
+{
+	constructor(name, styles, descendants)
+	{
+		this.name = name
+		this.styles = styles
+		this.descendants = descendants
+	}
+
+	// parse lines (using styles) into a JSON object with child nodes of this child node
+	json()
+	{
+		const object = {}
+
+		// transform styles from text to JSON objects
+		const own_style = this.styles.map(function(style)
+		{
+			const parts = style.split(':')
+
+			let key     = parts[0].trim()
+			const value = parts[1].trim()
+
+			// transform dashed key to camelCase key (it's required by React)
+			key = key.replace(/([-]{1}[a-z]{1})/g, character => character.substring(1).toUpperCase())
+
+			return { key, value }
+		})
+		// add own styles to the object
+		.reduce(function(own_style, style)
+		{
+			own_style[style.key] = style.value
+			return own_style
+		}, 
+		{})
+
+		// apply the style to the object itself
+		extend(object, own_style)
+
+		// process child lines recursively
+		const children = parse_lines(this.descendants)
+
+		// detect and expand modifier style classes
+		Object.keys(children).filter(name => starts_with(name, '.')).forEach(function(name)
+		{
+			// remove the leading dot from the name
+			children[name.substring('.'.length)] = extend({}, own_style, children[name])
+			delete children[name]
+		})
+
+		// add children to the parent
+		extend(object, children)
+
+		// end this block
+		return object
+	}
+}
+
+// tabulation utilities
+class Tabulator
+{
+	constructor(tab)
+	{
+		this.tab = tab
+	}
+
+	// // has tab in the beginning
+	// is_tabulated(line)
+	// {
+	// 	return starts_with(line, this.tab.symbol)
+	// }
+
+	// add one tab in the beginning
+	tabulate(line, how_much = 1)
+	{
+		return repeat(this.tab.symbol, how_much) + line
+	}
+
+	// remove some tabs in the beginning
+	reduce_tabulation(line, how_much = 1)
+	{
+		return line.substring(this.tab.symbol.length * how_much)
+	}
+
+	// how many "tabs" are there before content of this line
+	calculate_indentation(line)
+	{
+		const matches = line.match(this.tab.regexp)
+
+		if (!matches)
+		{
+			return 0
+		}
+
+		return matches[0].length / this.tab.symbol.length
+	}
+
+	normalize_initial_tabulation(lines)
+	{
+		// filter out blank lines,
+		// calculate each line's indentation,
+		// and get the minimum one
+		const minimum_indentation = lines
+			.filter(line => !is_blank(line))
+			.map(line => this.calculate_indentation(line))
+			.reduce((minimum, indentation) => Math.min(minimum, indentation), Infinity)
+
+		// if there is initial tabulation missing - add it
+		if (minimum_indentation === 0)
+		{
+			lines = lines.map(line => this.tabulate(line))
+		}
+		// if there is excessive tabulation - trim it
+		else if (minimum_indentation > 1)
+		{
+			lines = lines.map(line => this.reduce_tabulation(line, minimum_indentation - 1))
+		}
+
+		return lines
+	}
+}
+
 // decide whether it's tabs or spaces
-function determine_tabulation(lines)
+Tabulator.determine_tabulation = function(lines)
 {
 	const substract = pair => pair[0] - pair[1]
 
@@ -123,80 +264,11 @@ function determine_tabulation(lines)
 	return spaced_tab
 }
 
-// converts text to JSON object
-function parse_json_object(text)
-{
-	// ignore opening curly braces for now.
-	// maybe support curly braces along with tabulation in future
-	text = text.replace(/[\{\}]/g, '')
-
-	return parse_lines(text.split('\n'))
-}
-
-class Node
-{
-	constructor(name)
-	{
-		this.name = name
-		this.lines = []
-		this.styles = []
-	}
-
-	// parse lines (using styles) into a JSON object with child nodes of this child node
-	json()
-	{
-		const object = {}
-
-		// add own styles
-		const own_style = {}
-		for (let style of this.styles)
-		{
-			const parts = style.split(':')
-
-			let key     = parts[0].trim()
-			const value = parts[1].trim()
-
-			// transform dashed key to camelCase key (it's required by React)
-			key = key.replace(/([-]{1}[a-z]{1})/g, character => character.substring(1).toUpperCase())
-
-			own_style[key] = value
-		}
-
-		// apply the style to the object itself
-		extend(object, own_style)
-
-		// process child lines recursively
-		const children = parse_lines(this.lines)
-
-		// detect and expand modifier style classes
-		Object.keys(children).filter(name => starts_with(name, '.')).forEach(function(name)
-		{
-			// remove the leading dot from the name
-			children[name.substring('.'.length)] = extend({}, own_style, children[name])
-			delete children[name]
-		})
-
-		// add children to the parent
-		extend(object, children)
-
-		// end this block
-		return object
-	}
-
-	add_style(style)
-	{
-		this.styles.push(style)
-	}
-
-	add_line(line)
-	{
-		this.lines.push(line)
-	}
-}
-
+// parses lines of text into a JSON object
+// (recursive function)
 function parse_lines(lines)
 {
-	// return if no lines
+	// return empty object if there are no lines
 	if (!lines.length)
 	{
 		return {}
@@ -205,67 +277,14 @@ function parse_lines(lines)
 	// ensure there are no blank lines at the start
 	if (is_blank(lines[0]))
 	{
-		lines.splice(0, 1)
+		lines.shift()
 		return parse_lines(lines)
 	}
 
-	// has tab in the beginning
-	const is_tabulated = line => starts_with(line, tab.symbol)
+	const tabulator = new Tabulator(Tabulator.determine_tabulation(lines))
 
-	// add one tab in the beginning
-	const tablulate = line => tab.symbol + line
-
-	// remove some tabs in the beginning
-	const reduce_tabulation = (line, how_much) => line.substring(tab.symbol.length * how_much)
-
-	// remove one tab in the beginning
-	const chop_one_tab_off = (line) => reduce_tabulation(line, 1)
-
-	// how many "tabs" are there before content of this line
-	function calculate_indentation(line)
-	{
-		const matches = line.match(tab.regexp)
-
-		if (!matches)
-		{
-			return 0
-		}
-
-		return matches[0].length / tab.symbol.length
-	}
-
-	function normalize_initial_tabulation(lines)
-	{
-		// filter out blank lines,
-		// calculate each line's indentation,
-		// and get the minimum one
-		const minimum_indentation = lines
-			.filter(line => !is_blank(line))
-			.map(calculate_indentation)
-			.reduce((minimum, indentation) => Math.min(minimum, indentation), Infinity)
-
-		// if there is initial tabulation missing - add it
-		if (minimum_indentation === 0)
-		{
-			lines = lines.map(line => tablulate(line))
-		}
-		// if there is excessive tabulation - trim it
-		else if (minimum_indentation > 1)
-		{
-			lines = lines.map(line => reduce_tabulation(line, minimum_indentation - 1))
-		}
-
-		return lines
-	}
-
-	const tab = determine_tabulation(lines)
-	lines = normalize_initial_tabulation(lines)
-
-	const nodes = {}
-
-	// to do: start later refactoring from here
-
-	lines = lines.filter(function(line)
+	lines = tabulator.normalize_initial_tabulation(lines)
+	.filter(function(line)
 	{
 		// ignore blank lines,
 		// ignore single line comments (//)
@@ -275,8 +294,8 @@ function parse_lines(lines)
 	{
 		let original_line = line
 
-		const indentation = calculate_indentation(line)
-		line = reduce_tabulation(line, indentation)
+		const indentation = tabulator.calculate_indentation(line)
+		line = tabulator.reduce_tabulation(line, indentation)
 
 		// check for messed up space tabulation
 		if (starts_with(line, ' '))
@@ -292,103 +311,72 @@ function parse_lines(lines)
 		{
 			line          : line,
 			index         : index,
-			original_line : original_line,
 			indentation   : indentation
 		}
 
 		return result
 	})
 
-	const node_entry_lines = lines.filter(line_data => line_data.indentation === 1)
+	// determine lines with indentation = 1 (child block entry lines)
+	const node_entry_lines = lines.filter(line_data => line_data.indentation === 1).map(line => line.index)
 
-	const from_to = node_entry_lines.reduce(function(from_tos, node)
+	// deduce corresponding child block ending lines
+	const node_ending_lines = node_entry_lines.map(line_index => line_index - 1)
+	node_ending_lines.shift()
+	node_ending_lines.push(lines.length - 1)
+
+	// each node boundaries in terms of starting line index and ending line index
+	const from_to = zip(node_entry_lines, node_ending_lines)
+
+	// now lines are split by blocks
+	const node_blocks = from_to.map(from_to => lines.slice(from_to[0], from_to[1] + 1))
+
+	return node_blocks.map(function(lines)
 	{
-		if (from_tos.length === 0)
+		// the first line is the node's name
+		let name = lines.shift().line
+
+		// if someone forgot a trailing colon in the style class name - trim it
+		// (or maybe these are Python people)
+		if (ends_with(name, ':'))
 		{
-			from_tos.push([0, node.index])
+			name = name.substring(0, name.length - ':'.length)
+			// throw new Error(`Remove the trailing colon at line: ${original_line}`)
 		}
-		else
+
+		// node own styles
+		const styles = lines.filter(function(line_info)
 		{
-			from_tos.push([from_tos[from_tos.length - 1][1], node.index])
-		}
+			const line        = line_info.line
+			const indentation = line_info.indentation
 
-		return from_tos
-	}, 
-	[])
-
-	let node_blocks
-
-	if (from_to.length > 1)
-	{
-		from_to.shift()
-		from_to.push([from_to[from_to.length - 1][1], lines.length])
-
-		if (node_entry_lines.length > 1)
-		{
-			node_blocks = from_to.map(from_to => lines.slice(from_to[0], from_to[1]))
-		}
-	}
-	else
-	{
-		node_blocks = [lines]
-	}
-
-	const child_nodes = node_blocks.map(function(lines)
-	{
-		let previous_indendation = 0
-		let child
-			
-		lines.forEach(function(line_data)
-		{
-			let line = line_data.line
-			const original_line = line_data.original_line
-			const indentation = line_data.indentation
-
-			// if the indentation level is 1, then it's the start of a new block
-			if (indentation === 1)
+			if (indentation !== 2)
 			{
-				// if someone forgot a trailing colon in the style class name - trim it
-				// (or maybe these are Python people)
-				if (ends_with(line, ':'))
-				{
-					line = line.substring(0, line.length - ':'.length)
-					// throw new Error(`Remove the trailing colon at line: ${original_line}`)
-				}
-
-				// start a new block for this style class
-				child = new Node(line)
-			}
-			else
-			{
-				const colon_index = line.indexOf(':')
-				const seems_like_css = colon_index > 0 && colon_index < line.length - 1
-
-				// if it's a generic style for this style class - 
-				// simply add it to the styles array and continue the cycle
-				if (indentation === 2 && seems_like_css && !starts_with(line, '@'))
-				{
-					child.add_style(line)
-				}
-				else
-				{
-					// if it's not a generic style, then it's a descendant node
-					child.add_line(chop_one_tab_off(original_line))
-				}
+				return
 			}
 
-			// update the will-be-previous indentation level
-			previous_indendation = indentation
+			// detect generic css style line
+			const colon_index = line.indexOf(':')
+			return (colon_index > 0 && colon_index < line.length - 1) && !starts_with(line, '@')
 		})
 
-		return { name: child.name, json: child.json() }
-	})
-	.forEach(function(child)
-	{
-		nodes[child.name] = child.json
-	})
+		// node child nodes and all their descendants if any
+		const descendants = lines.filter(function(line_info)
+		{
+			return !styles.includes(line_info)
+		})
 
-	// done
-	return nodes
+		// create a new block for this style class
+		const node = new Node(name, styles.map(line_info => line_info.line), descendants.map(line_info => tabulator.tabulate(line_info.line, line_info.indentation - 1)))
+
+		return { name, json: node.json() }
+	})
+	.reduce(function(nodes, node)
+	{
+		nodes[node.name] = node.json
+		return nodes
+	}, 
+	{})
 }
 
 // using ES6 template strings
