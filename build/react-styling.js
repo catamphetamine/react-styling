@@ -231,7 +231,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				// this node child nodes and all their children, etc
 				var children_lines = lines.filter(function (line_info) {
-					return !styles.includes(line_info);
+					return styles.indexOf(line_info) < 0;
 				});
 	
 				// convert from line info to lines
