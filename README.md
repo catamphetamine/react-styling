@@ -44,7 +44,7 @@ It allows you to (citation):
   * Keyframes animation helper
   * ES6 class and createClass support
 
-And you can use this module with this Radium thing too: write you styles in text, then transform the text using react-styling into a JSON object, and then use that JSON object with Radium, and it will work. If you opt in to use the "modifiers" feature of this module then you won't have to write `style={[style.a, style.a.b]}`, you can just write `style={style.b}`.
+And you can use this module with this Radium thing too: write you styles in text, then transform the text using react-styling into a JSON object, and then use that JSON object with Radium, and it will work. If you opt in to use the "modifiers" feature of this module then you won't have to write `style={[style.a, style.a.b]}`, you can just write `style={style.a.b}`.
 
 ## Installation
 
@@ -54,12 +54,12 @@ $ npm install react-styling
 
 ## Usage
 
-This module is written in ES6, so if you are too then you can import it as is.
-To use it, you can either use ES6 in your application, or you can use Babel (which I do and most of the modern developers out there too).
+This module is written in ES6, so if you are using ES6 in your project too then you can `import` it as is.
+There's a tool called Babel which transplies your ES6/ES7 code into the old ES5 syntax so that it will work in all web browsers.
 
-Otherwise, if you still prefer the old ES5 syntax, there's a precompiled ES5 version for you in the `build` folder called `react-styling.js` (along with the minified version called `react-styling.minified.js`).
+Otherwise, if you still prefer to use the old ES5 syntax in your projects then there's a precompiled ES5 version for you in the `build` folder called `react-styling.js` (along with the minified version called `react-styling.minified.js`).
 
-After you import (or require) react-styling into your React component, then you write your styles using just tabulation and CSS syntax.
+After you `import` (or `require`) react-styling into your React component code then you write your styles using just tabulation and CSS syntax.
 
 ```js
 import React from 'react'
@@ -114,7 +114,9 @@ const style = styler
 `
 ```
 
-The example is self-explanatory. Notice the dot before the "current" class - this feature is optional (you don't need to use it at all), and it means that this style class is a "modifier" and all the default style (in this case, all the paddings, etc) will be included in this style class so that you don't need to do manual merging like `style="extend({}, style.menu.item.link, style.menu.item.link.current)"`.
+The example is self-explanatory.
+
+Notice the dot before the "current" class - this feature is optional (you don't need to use it at all), and it means that this style class is a "modifier" and all the style from it's parent node will be included in this style class. In this example, the paddings, color, display and text-decoration from the "link" style class will be included in the "current" style class, so it works just like `.link { ... } .link.current { ... }` CSS selector. If you opt in to using the "modifiers" feature then you won't need to do manual merging in Radium like `style="extend({}, style.menu.item.link, style.menu.item.link.current)"`.
 
 The CSS text in the example above will be transformed to this JSON object
 
@@ -233,15 +235,13 @@ const style = styler
 
 ### What's next
 
-I can add the features you want (or you can do it). I can cover it with tests (or you can do it). I could optimize it, etc.
+I can add the features you want (or you can do it). I can work on making errors more user friendly and helpful if anyone else uses this module.
 
-I can also work on making errors more user friendly and helpful if anyone else uses this module.
-
-If you want a feature, go create an issue (or even a pull request). If it doesn't work for you or you're having errors with it - go create an issue, again.
+If you want a feature, go create an issue (before making a pull request). If it doesn't work for you or you're having errors when using this module - go create an issue.
 
 ### Webpack
 
-If you are using Webpack (like me) then the loader configuration would look like
+If you are using Webpack with Babel (like me and like the rest of the world does) then the loader configuration for javascript would look like
 
 ```js
 {
@@ -257,9 +257,9 @@ If you are using Webpack (like me) then the loader configuration would look like
 },
 ```
 
-Maybe I could also write a webpack loader to perform text-to-json conversion at compile time as opposed to run time.
+Maybe I could also write a webpack loader to perform text-to-json conversion at compile time as opposed to run time. If anyone needs that at all.
 
-### Developing
+### Development
 
 If you'd like to start working on this project you'll need to install some global stuff
 
