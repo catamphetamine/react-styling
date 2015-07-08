@@ -161,7 +161,7 @@ function parse_lines(lines)
 		// this node child nodes and all their children, etc
 		let children_lines = lines.filter(function(line_info)
 		{
-			return !styles.includes(line_info)
+			return styles.indexOf(line_info) < 0
 		})
 
 		// convert from line info to lines
