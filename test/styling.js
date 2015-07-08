@@ -1,5 +1,5 @@
 import chai from 'chai'
-import styler from './../index'
+import styler from './../source/index'
 
 chai.should()
 

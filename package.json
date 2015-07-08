@@ -2,17 +2,29 @@
   "name": "react-styling",
   "version": "1.0.4",
   "description": "Transforms CSS-alike text into a React style JSON object",
-  "main": "index.js",
+  "main": "build-modules/index.js",
+  "dependencies": {},
   "devDependencies": {
     "babel": "^5.6.14",
+    "babel-core": "^5.6.15",
+    "babel-loader": "^5.3.1",
     "chai": "^3.0.0",
+    "html-webpack-plugin": "^1.6.0",
     "istanbul": "^0.3.17",
-    "mocha": "^2.2.5"
+    "mocha": "^2.2.5",
+    "node-libs-browser": "^0.5.2",
+    "webpack": "^1.10.1",
+    "webpack-merge": "^0.1.2"
   },
   "scripts": {
     "test": "mocha --compilers js:babel/register --bail --reporter spec test/",
     "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot test/",
-    "test-travis": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec test/"
+    "test-travis": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec test/",
+    "gh-pages": "TARGET=gh-pages webpack --config ./config",
+    "deploy-gh-pages": "TARGET=gh-pages node ./config/deploy-gh-pages.js",
+    "build": "TARGET=build webpack && TARGET=build-minified webpack",
+    "build-modules": "babel ./source --out-dir ./build-modules",
+    "preversion": "npm run test && npm run build && npm run build-modules && git commit -am \"Update build\""
   },
   "repository": {
     "type": "git",

@@ -1,5 +1,14 @@
 # react-styling
 
+[![NPM Version][npm-image]][npm-url]
+[![NPM Downloads][downloads-image]][downloads-url]
+[![Build Status][travis-image]][travis-url]
+
+<!---
+[![Test Coverage][coveralls-image]][coveralls-url]
+[![Gratipay][gratipay-image]][gratipay-url]
+-->
+
 ## Motivation
 
 At first when I heard about "that React thing" a couple of years earlier I opened their website,
@@ -45,12 +54,15 @@ $ npm install react-styling
 
 ## Usage
 
-This module is written in ES6.
+This module is written in ES6, so if you are too then you can import it as is.
 To use it, you can either use ES6 in your application, or you can use Babel (which I do and most of the modern developers out there too).
 
-Then you write your styles using just tabulation and CSS syntax.
+Otherwise, if you still prefer the old ES5 syntax, there's a precompiled ES5 version for you in the `build` folder called `react-styling.js` (along with the minified version called `react-styling.minified.js`).
+
+After you import (or require) react-styling into your React component, then you write your styles using just tabulation and CSS syntax.
 
 ```js
+import React from 'react'
 import styler from 'react-styling'
 
 export default class Page extends React.Component
@@ -247,6 +259,30 @@ If you are using Webpack (like me) then the loader configuration would look like
 
 Maybe I could also write a webpack loader to perform text-to-json conversion at compile time as opposed to run time.
 
+### Developing
+
+If you'd like to start working on this project you'll need to install some global stuff
+
+```
+sudo npm install --global webpack
+sudo npm install --global babel
+```
+
+Then you do your usual `npm install` and then everything should work.
+
 ## License
 
 [MIT](LICENSE)
+[npm-image]: https://img.shields.io/npm/v/react-styling.svg
+[npm-url]: https://npmjs.org/package/react-styling
+[travis-image]: https://img.shields.io/travis/halt-hammerzeit/react-styling/master.svg
+[travis-url]: https://travis-ci.org/halt-hammerzeit/react-styling
+[downloads-image]: https://img.shields.io/npm/dm/react-styling.svg
+[downloads-url]: https://npmjs.org/package/react-styling
+
+<!---
+[coveralls-image]: https://img.shields.io/coveralls/expressjs/session/master.svg
+[coveralls-url]: https://coveralls.io/r/expressjs/session?branch=master
+[gratipay-image]: https://img.shields.io/gratipay/dougwilson.svg
+[gratipay-url]: https://gratipay.com/dougwilson/
+-->
