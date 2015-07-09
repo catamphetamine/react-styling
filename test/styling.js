@@ -364,4 +364,55 @@ menu
 
 		style.should.deep.equal(object)
 	})
+
+	it('should support nested modifiers', function()
+	{
+		const style = styler
+		`
+			menu
+				list-style-type: none
+
+				.one
+					display: inline-block
+
+					.two
+						display         : block
+						text-decoration : none
+						color           : #000000
+
+					.three
+						color           : #ffffff
+		`
+
+		const object =
+		{
+			menu:
+			{
+				listStyleType: 'none',
+
+				one:
+				{
+					listStyleType  : 'none',
+					display        : 'inline-block',
+
+					two:
+					{
+						listStyleType: 'none',
+						display        : 'block',
+						textDecoration : 'none',
+						color          : '#000000'
+					},
+
+					three:
+					{
+						listStyleType  : 'none',
+						display        : 'inline-block',
+						color          : '#ffffff'
+					}
+				}
+			}
+		}
+
+		style.should.deep.equal(object)
+	})
 })

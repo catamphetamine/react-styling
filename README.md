@@ -109,7 +109,7 @@ const style = styler
 
 The example is self-explanatory.
 
-Notice the dot before the "current" class - this feature is optional (you don't need to use it at all), and it means that this style class is a "modifier" and all the style from it's parent node will be included in this style class. In this example, the paddings, color, display and text-decoration from the "link" style class will be included in the "current" style class, so it works just like `.link { ... } .link.current { ... }` CSS selector. If you opt in to using the "modifiers" feature then you won't need to do manual merging in Radium like `style="extend({}, style.menu.item.link, style.menu.item.link.current)"`.
+Notice the dot before the "current" class - this feature is optional (you don't need to use it at all), and it means that this style class is a "modifier" and all the style from it's parent node will be included in this style class. In this example, the paddings, color, display and text-decoration from the "link" style class will be included in the "current" style class, so it works just like `.link { ... } .link.current { ... }` CSS selector. If you opt in to using the "modifiers" feature then you won't need to do manual merging like `style="extend({}, style.menu.item.link, style.menu.item.link.current)"`.
 
 The CSS text in the example above will be transformed to this JSON object
 

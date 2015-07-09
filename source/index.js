@@ -1,6 +1,27 @@
 import { exists, starts_with, ends_with, is_blank, zip, extend } from './helpers'
 import Tabulator from './tabulator'
 
+// using ES6 template strings
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/template_strings
+export default function styler(strings, ...values)
+{
+	let style = ''
+
+	// restore the whole string from "strings" and "values" parts
+	let i = 0
+	while (i < strings.length)
+	{
+		style += strings[i]
+		if (exists(values[i]))
+		{
+			style += values[i]
+		}
+		i++
+	}
+
+	return parse_json_object(style)
+}
+
 // converts text to JSON object
 function parse_json_object(text)
 {
@@ -8,55 +29,11 @@ function parse_json_object(text)
 	// maybe support curly braces along with tabulation in future
 	text = text.replace(/[\{\}]/g, '')
 
-	return parse_lines(text.split('\n'))
-}
+	// parse text into JSON object
+	const style_json = parse_lines(text.split('\n'))
 
-// a node in style JSON object
-// parse lines (using styles) into a JSON object with child nodes of this child node
-function generate_node_json(name, styles, children_lines)
-{
-	const object = {}
-
-	// transform styles from text to JSON objects
-	const own_style = styles.map(function(style)
-	{
-		const parts = style.split(':')
-
-		let key     = parts[0].trim()
-		const value = parts[1].trim()
-
-		// transform dashed key to camelCase key (it's required by React)
-		key = key.replace(/([-]{1}[a-z]{1})/g, character => character.substring(1).toUpperCase())
-
-		return { key, value }
-	})
-	// add own styles to the object
-	.reduce(function(own_style, style)
-	{
-		own_style[style.key] = style.value
-		return own_style
-	}, 
-	{})
-
-	// apply the style to the object itself
-	extend(object, own_style)
-
-	// process child lines recursively
-	const children = parse_lines(children_lines)
-
-	// detect and expand modifier style classes
-	Object.keys(children).filter(name => starts_with(name, '.')).forEach(function(name)
-	{
-		// remove the leading dot from the name
-		children[name.substring('.'.length)] = extend({}, own_style, children[name])
-		delete children[name]
-	})
-
-	// add children to the parent
-	extend(object, children)
-
-	// end this block
-	return object
+	// expand "modifier" style classes
+	return expand_modifier_style_classes(style_json)
 }
 
 // parses lines of text into a JSON object
@@ -88,8 +65,6 @@ function parse_lines(lines)
 	})
 	.map(function(line, index)
 	{
-		let original_line = line
-
 		// get this line indentation and also trim the indentation
 		const indentation = tabulator.calculate_indentation(line)
 		line = tabulator.reduce_tabulation(line, indentation)
@@ -133,6 +108,16 @@ function parse_lines(lines)
 		// the first line is the node's name
 		let name = lines.shift().line
 
+		// is it a "modifier" style class
+		let is_a_modifier = false
+
+		// detect modifier style classes
+		if (starts_with(name, '.'))
+		{
+			name = name.substring('.'.length)
+			is_a_modifier = true
+		}
+
 		// if someone forgot a trailing colon in the style class name - trim it
 		// (or maybe these are Python people)
 		if (ends_with(name, ':'))
@@ -171,6 +156,11 @@ function parse_lines(lines)
 		// generate JSON object for this node
 		const json = generate_node_json(name, styles, children_lines)
 
+		if (is_a_modifier)
+		{
+			json._is_a_modifier = true
+		}
+
 		return { name, json }
 	})
 	.reduce(function(nodes, node)
@@ -181,23 +171,88 @@ function parse_lines(lines)
 	{})
 }
 
-// using ES6 template strings
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/template_strings
-export default function styler(strings, ...values)
+// a node in style JSON object
+// parse lines (using styles) into a JSON object with child nodes of this child node
+function generate_node_json(name, styles, children_lines)
 {
-	let style = ''
+	const object = {}
 
-	// restore the whole string from "strings" and "values" parts
-	let i = 0
-	while (i < strings.length)
+	// transform styles from text to JSON objects
+	const own_style = styles.map(function(style)
 	{
-		style += strings[i]
-		if (exists(values[i]))
-		{
-			style += values[i]
-		}
-		i++
-	}
+		const parts = style.split(':')
 
-	return parse_json_object(style)
+		let key     = parts[0].trim()
+		const value = parts[1].trim()
+
+		// transform dashed key to camelCase key (it's required by React)
+		key = key.replace(/([-]{1}[a-z]{1})/g, character => character.substring(1).toUpperCase())
+
+		return { key, value }
+	})
+	// add own styles to the object
+	.reduce(function(own_style, style)
+	{
+		own_style[style.key] = style.value
+		return own_style
+	}, 
+	{})
+
+	// apply the style to the object itself
+	extend(object, own_style)
+
+	// process child lines recursively
+	const children = parse_lines(children_lines)
+
+	// add children to the parent
+	extend(object, children)
+
+	// end this block
+	return object
+}
+
+// expand modifier style classes
+function expand_modifier_style_classes(node)
+{
+	const style = get_node_style(node)
+
+	Object.keys(node)
+	// get all modifier style class nodes
+	.filter(name => typeof(node[name]) === 'object' && node[name]._is_a_modifier)
+	// for each modifier style class node
+	.forEach(function(name)
+	{
+		// delete the modifier flags
+		delete node[name]._is_a_modifier
+
+		// include parent node styles into the modifier style class node
+		node[name] = extend({}, style, node[name])
+	})
+
+	Object.keys(node)
+	// get all style class nodes
+	.filter(name => typeof(node[name]) === 'object')
+	// for each style class node
+	.forEach(function(name)
+	{
+		// recurse
+		expand_modifier_style_classes(node[name])
+	})
+
+	return node
+}
+
+// extracts root css styles of this style class node
+function get_node_style(node)
+{
+	return Object.keys(node)
+	// get all CSS styles of this style class node
+	.filter(property => typeof(node[property]) !== 'object')
+	// for each CSS style of this style class node
+	.reduce(function(style, style_property)
+	{
+		style[style_property] = node[style_property]
+		return style
+	}, 
+	{})
 }

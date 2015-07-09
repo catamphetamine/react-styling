@@ -5,10 +5,20 @@ var path = require('path')
 var webpack = require('webpack')
 var HtmlWebpackPlugin = require('html-webpack-plugin')
 var merge = require('webpack-merge')
+var minimist = require('minimist')
 
 var pkg = require('./package.json')
 
-var TARGET = process.env.TARGET
+var process_arguments = minimist(process.argv.slice(2))
+
+var TARGET = process_arguments.action
+
+// if not process_arguments.target
+//   console.log 'Target required.'
+//   console.log 'Usage: webpack --target=[build|build-minified]'
+//   return
+
+// var TARGET = process.env.TARGET
 var ROOT_PATH = path.resolve(__dirname)
 var DEMO_DIR = 'demo'
 var config = 
