@@ -232,24 +232,6 @@ I can add the features you want (or you can do it). I can work on making errors 
 
 If you want a feature, go create an issue (before making a pull request). If it doesn't work for you or you're having errors when using this module - go create an issue.
 
-### Webpack
-
-If you are using Webpack with Babel (like I do and like the rest of the world does) then the loader configuration for javascript would look like
-
-```js
-{
-  // .js and .jsx
-  test: /\.jsx?$/,
-  // exclude: /(node_modules|bower_components)/,
-  include: 
-  [
-    path.resolve(__dirname, 'sources/client'),
-    path.resolve(__dirname, 'node_modules', 'react-styling')
-  ],
-  loader: 'babel'
-},
-```
-
 Maybe I could also write a webpack loader to perform text-to-json conversion at compile time as opposed to run time. If anyone needs that at all.
 
 ### Development
