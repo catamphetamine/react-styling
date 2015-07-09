@@ -1,6 +1,6 @@
 {
   "name": "react-styling",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Transforms CSS-alike text into a React style JSON object",
   "main": "build-modules/styler.js",
   "dependencies": {},
