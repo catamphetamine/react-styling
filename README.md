@@ -91,11 +91,7 @@ const style = styler
         display         : inline-block
         text-decoration : none
         color           : #000000
-
-        padding-left    : 0.4em
-        padding-right   : 0.4em
-        padding-top     : 0.2em
-        padding-bottom  : 0.2em
+        padding         : 0.4em
 
         // notice the ampersand character here:
         // this feature is called a "modifier" class 
@@ -116,31 +112,32 @@ const style = styler
           color: black;
         }
 
+        curly_braces_fan {
+          background: none
+
+          curly_braces_fan_number_two {
+            background: transparent
+          }
+        }
+
+        YAML_fan:
+          display: inline-block
+
+          python:
+            length: 99999px
+
+        // for Radium users
         @media (min-width: 320px)
           width: 100%
 
           :hover 
             background: white
-
-        curly_braces {
-          background: none
-
-          curly_braces {
-            background: transparent
-          }
-        }
-
-        yaml_style:
-          display: inline-block
-
-          python:
-            length: 99999px
 `
 ```
 
 The example is self-explanatory.
 
-Notice the ampersand before the "current" style class - this feature is optional (you don't need to use it at all), and it means that this style class is a "modifier" and all the style from its parent style class will be included in this style class. In this example, the paddings, color, display and text-decoration from the "link" style class will be included in the "current" style class, so it works just like LESS/SASS ampersand. If you opt in to using the "modifiers" feature then you won't need to do manual merging like `style="extend({}, style.menu.item.link, style.menu.item.link.current)"`.
+Notice the ampersand before the "current" style class - this feature is optional (you don't need to use it at all), and it means that this style class is a "modifier" and all the style from its parent style class will be included in this style class. In this example, the padding, color, display and text-decoration from the "link" style class will be included in the "current" style class, so it works just like LESS/SASS ampersand. If you opt in to using the "modifiers" feature then you won't need to do manual merging like `style="extend({}, style.menu.item.link, style.menu.item.link.current)"`.
 
 The CSS text in the example above will be transformed to this JSON object
 
@@ -159,10 +156,7 @@ The CSS text in the example above will be transformed to this JSON object
         display        : 'inline-block',
         textDecoration : 'none',
         color          : '#000000',
-        paddingLeft    : '0.4em',
-        paddingRight   : '0.4em',
-        paddingTop     : '0.2em',
-        paddingBottom  : '0.2em',
+        padding        : '0.4em',
 
         current:
         {
@@ -170,10 +164,33 @@ The CSS text in the example above will be transformed to this JSON object
           textDecoration  : 'none',
           color           : '#ffffff',
           backgroundColor : '#000000',
-          paddingLeft     : '0.4em',
-          paddingRight    : '0.4em',
-          paddingTop      : '0.2em',
-          paddingBottom   : '0.2em',
+          padding         : '0.4em'
+        },
+
+        'old-school-regular-css-syntax':
+        {
+          boxSizing: 'border-box',
+          color: 'black'
+        },
+
+        curly_braces_fan:
+        {
+          background: 'none',
+
+          curly_braces_fan_number_two:
+          {
+            background: 'transparent'
+          }
+        },
+
+        YAML_fan:
+        {
+          display: 'inline-block',
+
+          python:
+          {
+            length: '99999px'
+          }
         },
 
         '@media (min-width: 320px)': 
@@ -183,32 +200,6 @@ The CSS text in the example above will be transformed to this JSON object
           ':hover': 
           {
             background: 'white'
-          }
-        },
-
-        'old-school-regular-css-syntax':
-        {
-          boxSizing: 'border-box',
-          color: 'black'
-        },
-
-        curly_braces:
-        {
-          background: 'none',
-
-          curly_braces:
-          {
-            background: 'transparent'
-          }
-        },
-
-        yaml_style:
-        {
-          display: 'inline-block',
-
-          python:
-          {
-            length: '99999px'
           }
         }
       }
@@ -244,6 +235,7 @@ If you'd like to start working on this project you'll need to install some globa
 ```
 sudo npm install --global webpack
 sudo npm install --global babel
+sudo npm install --global mocha
 ```
 
 Then you do your usual `npm install` and then everything should work.
