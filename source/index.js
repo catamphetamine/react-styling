@@ -44,7 +44,6 @@ function parse_style_json_object(text)
 	return expand_modifier_style_classes(style_json)
 }
 
-// (recursive function)
 // parse child nodes' lines (and this node's styles) into this node's style JSON object
 function parse_node_json(styles, children_lines)
 {
@@ -73,53 +72,25 @@ function parse_node_json(styles, children_lines)
 	{})
 
 	// parse child nodes and add them to this node's JSON object
-	return extend(style_object, parse_lines(children_lines))
+	return extend(style_object, parse_children(children_lines))
 }
 
-// parses lines of text into a JSON object
-// (recursive function)
-function parse_lines(lines)
+// parses child nodes' lines of text into the corresponding child node JSON objects
+function parse_children(lines)
 {
-	// return empty object if there are no lines
+	// preprocess the lines (filter out comments, blank lines, etc)
+	lines = filter_lines_for_parsing(lines)
+
+	// return empty object if there are no lines to parse
 	if (lines.length === 0)
 	{
 		return {}
 	}
 
-	// remove single line comments
-	lines.forEach(function(line)
+	// parse each child node's lines
+	return split_lines_by_child_nodes(lines).map(function(lines)
 	{
-		// remove single line comments
-		line.line = line.line.replace(/\/\/.*/, '')
-		// remove any trailing whitespace
-		line.line = line.line.trim()
-	})
-
-	// filter out blank lines
-	lines = lines.filter(line => !is_blank(line.line))
-
-	// determine lines with indentation = 1 (child node entry lines)
-	const node_entry_lines = lines.map((line, index) => 
-		{
-			return { tabs: line.tabs, index }
-		})
-		.filter(line => line.tabs === 1)
-		.map(line => line.index)
-
-	// deduce corresponding child node ending lines
-	const node_ending_lines = node_entry_lines.map(line_index => line_index - 1)
-	node_ending_lines.shift()
-	node_ending_lines.push(lines.length - 1)
-
-	// each node boundaries in terms of starting line index and ending line index
-	const from_to = zip(node_entry_lines, node_ending_lines)
-
-	// now lines are split by nodes
-	const each_node_lines = from_to.map(from_to => lines.slice(from_to[0], from_to[1] + 1))
-
-	return each_node_lines.map(function(lines)
-	{
-		// the first line is the node's name
+		// the first line is this child node's name
 		let name = lines.shift().line
 
 		// is it a "modifier" style class
@@ -146,10 +117,10 @@ function parse_lines(lines)
 			// throw new Error(`Remove the trailing colon at line: ${original_line}`)
 		}
 
-		// node's own styles
+		// this child node's styles
 		let styles = lines.filter(function(line)
 		{
-			// own styles always have indentation of 2
+			// styles always have indentation of 2
 			if (line.tabs !== 2)
 			{
 				return false
@@ -160,32 +131,77 @@ function parse_lines(lines)
 			return (colon_index > 0 && colon_index < line.line.length - 1) && !starts_with(line.line, '@')
 		})
 
-		// this node child nodes and all their children, etc
-		let children_lines = lines.filter(function(line)
-		{
-			return styles.indexOf(line) < 0
-		})
+		// the lines corresponding to this child node's child nodes and all their children, etc
+		const children_lines = lines.filter(line => styles.indexOf(line) < 0)
 
-		// convert from line info to lines
+		// convert style lines info to just text lines
 		styles = styles.map(line => line.line)
+
+		// reduce tabulation for this child node's child nodes' lines
 		children_lines.forEach(line => line.tabs--)
 
-		// generate JSON object for this node
+		// using this child node's style lines 
+		// and this child node's child nodes' lines,
+		// generate this child node's style JSON object
+		// (this is gonna be a recursion)
 		const json = parse_node_json(styles, children_lines)
 
+		// set the modifier flag if it's the case
 		if (is_a_modifier)
 		{
 			json._is_a_modifier = true
 		}
 
+		// this child node's style JSON object is ready
 		return { name, json }
 	})
+	// combine all the child nodes into a single JSON object
 	.reduce(function(nodes, node)
 	{
 		nodes[node.name] = node.json
 		return nodes
 	}, 
 	{})
+}
+
+// filters out commets, blank lines, etc
+function filter_lines_for_parsing(lines)
+{
+	// filter out blank lines
+	lines = lines.filter(line => !is_blank(line.line))
+
+	lines.forEach(function(line)
+	{
+		// remove single line comments
+		line.line = line.line.replace(/\/\/.*/, '')
+		// remove any trailing whitespace
+		line.line = line.line.trim()
+	})
+
+	return lines
+}
+
+// takes the whole lines array and splits it by its top-tier child nodes
+function split_lines_by_child_nodes(lines)
+{
+	// determine lines with indentation = 1 (child node entry lines)
+	const node_entry_lines = lines.map((line, index) => 
+	{
+		return { tabs: line.tabs, index }
+	})
+	.filter(line => line.tabs === 1)
+	.map(line => line.index)
+
+	// deduce corresponding child node ending lines
+	const node_ending_lines = node_entry_lines.map(line_index => line_index - 1)
+	node_ending_lines.shift()
+	node_ending_lines.push(lines.length - 1)
+
+	// each child node boundaries in terms of starting line index and ending line index
+	const from_to = zip(node_entry_lines, node_ending_lines)
+
+	// now lines are split by child nodes
+	return from_to.map(from_to => lines.slice(from_to[0], from_to[1] + 1))
 }
 
 // expand modifier style classes

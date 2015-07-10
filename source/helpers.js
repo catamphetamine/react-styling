@@ -33,7 +33,7 @@ export function repeat(what, times)
 // if the text is blank
 export function is_blank(text)
 {
-	return !text.replace(/\s/g, '')
+	return !exists(text) || !text.replace(/\s/g, '')
 }
 
 // zips two arrays
