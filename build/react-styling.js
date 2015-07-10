@@ -114,7 +114,6 @@ return /******/ (function(modules) { // webpackBootstrap
 		return expand_modifier_style_classes(style_json);
 	}
 	
-	// (recursive function)
 	// parse child nodes' lines (and this node's styles) into this node's style JSON object
 	function parse_node_json(styles, children_lines) {
 		// transform this node's style lines from text to JSON properties and their values
@@ -141,56 +140,22 @@ return /******/ (function(modules) { // webpackBootstrap
 		}, {});
 	
 		// parse child nodes and add them to this node's JSON object
-		return (0, _helpers.extend)(style_object, parse_lines(children_lines));
+		return (0, _helpers.extend)(style_object, parse_children(children_lines));
 	}
 	
-	// parses lines of text into a JSON object
-	// (recursive function)
-	function parse_lines(lines) {
-		// return empty object if there are no lines
+	// parses child nodes' lines of text into the corresponding child node JSON objects
+	function parse_children(lines) {
+		// preprocess the lines (filter out comments, blank lines, etc)
+		lines = filter_lines_for_parsing(lines);
+	
+		// return empty object if there are no lines to parse
 		if (lines.length === 0) {
 			return {};
 		}
 	
-		// remove single line comments
-		lines.forEach(function (line) {
-			// remove single line comments
-			line.line = line.line.replace(/\/\/.*/, '');
-			// remove any trailing whitespace
-			line.line = line.line.trim();
-		});
-	
-		// filter out blank lines
-		lines = lines.filter(function (line) {
-			return !(0, _helpers.is_blank)(line.line);
-		});
-	
-		// determine lines with indentation = 1 (child node entry lines)
-		var node_entry_lines = lines.map(function (line, index) {
-			return { tabs: line.tabs, index: index };
-		}).filter(function (line) {
-			return line.tabs === 1;
-		}).map(function (line) {
-			return line.index;
-		});
-	
-		// deduce corresponding child node ending lines
-		var node_ending_lines = node_entry_lines.map(function (line_index) {
-			return line_index - 1;
-		});
-		node_ending_lines.shift();
-		node_ending_lines.push(lines.length - 1);
-	
-		// each node boundaries in terms of starting line index and ending line index
-		var from_to = (0, _helpers.zip)(node_entry_lines, node_ending_lines);
-	
-		// now lines are split by nodes
-		var each_node_lines = from_to.map(function (from_to) {
-			return lines.slice(from_to[0], from_to[1] + 1);
-		});
-	
-		return each_node_lines.map(function (lines) {
-			// the first line is the node's name
+		// parse each child node's lines
+		return split_lines_by_child_nodes(lines).map(function (lines) {
+			// the first line is this child node's name
 			var name = lines.shift().line;
 	
 			// is it a "modifier" style class
@@ -215,9 +180,9 @@ return /******/ (function(modules) { // webpackBootstrap
 				;
 			}
 	
-			// node's own styles
+			// this child node's styles
 			var styles = lines.filter(function (line) {
-				// own styles always have indentation of 2
+				// styles always have indentation of 2
 				if (line.tabs !== 2) {
 					return false;
 				}
@@ -227,31 +192,84 @@ return /******/ (function(modules) { // webpackBootstrap
 				return colon_index > 0 && colon_index < line.line.length - 1 && !(0, _helpers.starts_with)(line.line, '@');
 			});
 	
-			// this node child nodes and all their children, etc
+			// the lines corresponding to this child node's child nodes and all their children, etc
 			var children_lines = lines.filter(function (line) {
 				return styles.indexOf(line) < 0;
 			});
 	
-			// convert from line info to lines
+			// convert style lines info to just text lines
 			styles = styles.map(function (line) {
 				return line.line;
 			});
+	
+			// reduce tabulation for this child node's child nodes' lines
 			children_lines.forEach(function (line) {
 				return line.tabs--;
 			});
 	
-			// generate JSON object for this node
+			// using this child node's style lines
+			// and this child node's child nodes' lines,
+			// generate this child node's style JSON object
+			// (this is gonna be a recursion)
 			var json = parse_node_json(styles, children_lines);
 	
+			// set the modifier flag if it's the case
 			if (is_a_modifier) {
 				json._is_a_modifier = true;
 			}
 	
+			// this child node's style JSON object is ready
 			return { name: name, json: json };
-		}).reduce(function (nodes, node) {
+		})
+		// combine all the child nodes into a single JSON object
+		.reduce(function (nodes, node) {
 			nodes[node.name] = node.json;
 			return nodes;
 		}, {});
+	}
+	
+	// filters out commets, blank lines, etc
+	function filter_lines_for_parsing(lines) {
+		// filter out blank lines
+		lines = lines.filter(function (line) {
+			return !(0, _helpers.is_blank)(line.line);
+		});
+	
+		lines.forEach(function (line) {
+			// remove single line comments
+			line.line = line.line.replace(/\/\/.*/, '');
+			// remove any trailing whitespace
+			line.line = line.line.trim();
+		});
+	
+		return lines;
+	}
+	
+	// takes the whole lines array and splits it by its top-tier child nodes
+	function split_lines_by_child_nodes(lines) {
+		// determine lines with indentation = 1 (child node entry lines)
+		var node_entry_lines = lines.map(function (line, index) {
+			return { tabs: line.tabs, index: index };
+		}).filter(function (line) {
+			return line.tabs === 1;
+		}).map(function (line) {
+			return line.index;
+		});
+	
+		// deduce corresponding child node ending lines
+		var node_ending_lines = node_entry_lines.map(function (line_index) {
+			return line_index - 1;
+		});
+		node_ending_lines.shift();
+		node_ending_lines.push(lines.length - 1);
+	
+		// each child node boundaries in terms of starting line index and ending line index
+		var from_to = (0, _helpers.zip)(node_entry_lines, node_ending_lines);
+	
+		// now lines are split by child nodes
+		return from_to.map(function (from_to) {
+			return lines.slice(from_to[0], from_to[1] + 1);
+		});
 	}
 	
 	// expand modifier style classes
@@ -352,7 +370,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// if the text is blank
 	
 	function is_blank(text) {
-		return !text.replace(/\s/g, '');
+		return !exists(text) || !text.replace(/\s/g, '');
 	}
 	
 	// zips two arrays
