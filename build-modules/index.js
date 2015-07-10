@@ -39,12 +39,17 @@ function styler(strings) {
 
 // converts text to JSON object
 function parse_json_object(text) {
-	// ignore opening curly braces for now.
+	// ignore curly braces for now.
 	// maybe support curly braces along with tabulation in future
 	text = text.replace(/[\{\}]/g, '');
 
+	var lines = text.split('\n');
+
+	// helper class for dealing with tabulation
+	var tabulator = new _tabulator2['default'](_tabulator2['default'].determine_tabulation(lines));
+
 	// parse text into JSON object
-	var style_json = parse_lines(text.split('\n'));
+	var style_json = parse_lines(tabulator.extract_tabulation(lines));
 
 	// expand "modifier" style classes
 	return expand_modifier_style_classes(style_json);
@@ -57,55 +62,42 @@ function parse_lines(_x) {
 
 	_function: while (_again) {
 		var lines = _x;
-		tabulator = node_entry_lines = node_ending_lines = from_to = each_node_lines = undefined;
+		node_entry_lines = node_ending_lines = from_to = each_node_lines = undefined;
 		_again = false;
 
 		// return empty object if there are no lines
-		if (!lines.length) {
+		if (lines.length === 0) {
 			return {};
 		}
 
 		// ensure there are no blank lines at the start
-		if ((0, _helpers.is_blank)(lines[0])) {
+		if ((0, _helpers.is_blank)(lines[0].line)) {
 			lines.shift();
 			_x = lines;
 			_again = true;
 			continue _function;
 		}
 
-		// helper class for dealing with tabulation
-		var tabulator = new _tabulator2['default'](_tabulator2['default'].determine_tabulation(lines));
+		lines = lines.filter(function (line) {
+			// // ignore blank lines,
+			// if (is_blank(line))
+			// {
+			// 	return false
+			// }
 
-		lines = tabulator.normalize_initial_tabulation(lines).filter(function (line) {
-			// ignore blank lines,
 			// ignore single line comments (//)
-			return !(0, _helpers.is_blank)(line) && !line.match(/^[\s]*\/\//);
-		}).map(function (line, index) {
-			// get this line indentation and also trim the indentation
-			var indentation = tabulator.calculate_indentation(line);
-			line = tabulator.reduce_tabulation(line, indentation);
-
-			// check for messed up space tabulation
-			if ((0, _helpers.starts_with)(line, ' ')) {
-				// #${line_index}
-				throw new Error('Invalid tabulation (some extra leading spaces) at line: "' + line + '"');
+			if (line.line.match(/^[\s]*\/\//)) {
+				return false;
 			}
 
-			// remove any trailing whitespace
-			line = line.trim();
-
-			var result = {
-				line: line,
-				index: index,
-				indentation: indentation
-			};
-
-			return result;
+			return true;
 		});
 
 		// determine lines with indentation = 1 (child node entry lines)
-		var node_entry_lines = lines.filter(function (line_data) {
-			return line_data.indentation === 1;
+		var node_entry_lines = lines.map(function (line, index) {
+			return { tabs: line.tabs, index: index };
+		}).filter(function (line) {
+			return line.tabs === 1;
 		}).map(function (line) {
 			return line.index;
 		});
@@ -147,31 +139,28 @@ function parse_lines(_x) {
 			}
 
 			// node's own styles
-			var styles = lines.filter(function (line_info) {
-				var line = line_info.line;
-				var indentation = line_info.indentation;
-
+			var styles = lines.filter(function (line) {
 				// own styles always have indentation of 2
-				if (indentation !== 2) {
-					return;
+				if (line.tabs !== 2) {
+					return false;
 				}
 
 				// detect generic css style line
-				var colon_index = line.indexOf(':');
-				return colon_index > 0 && colon_index < line.length - 1 && !(0, _helpers.starts_with)(line, '@');
+				var colon_index = line.line.indexOf(':');
+				return colon_index > 0 && colon_index < line.line.length - 1 && !(0, _helpers.starts_with)(line.line, '@');
 			});
 
 			// this node child nodes and all their children, etc
-			var children_lines = lines.filter(function (line_info) {
-				return styles.indexOf(line_info) < 0;
+			var children_lines = lines.filter(function (line) {
+				return styles.indexOf(line) < 0;
 			});
 
 			// convert from line info to lines
-			styles = styles.map(function (line_info) {
-				return line_info.line;
+			styles = styles.map(function (line) {
+				return line.line;
 			});
-			children_lines = children_lines.map(function (line_info) {
-				return tabulator.tabulate(line_info.line, line_info.indentation - 1);
+			children_lines.forEach(function (line) {
+				return line.tabs--;
 			});
 
 			// generate JSON object for this node

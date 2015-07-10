@@ -20,25 +20,22 @@ var Tabulator = (function () {
 	}
 
 	_createClass(Tabulator, [{
-		key: 'tabulate',
+		key: 'reduce_indentation',
 
 		// // has tab in the beginning
-		// is_tabulated(line)
+		// is_indentd(line)
 		// {
 		// 	return starts_with(line, this.tab.symbol)
 		// }
 
-		// add one tab in the beginning
-		value: function tabulate(line) {
-			var how_much = arguments[1] === undefined ? 1 : arguments[1];
-
-			return (0, _helpers.repeat)(this.tab.symbol, how_much) + line;
-		}
-	}, {
-		key: 'reduce_tabulation',
+		// // add one tab in the beginning
+		// indent(line, how_much = 1)
+		// {
+		// 	return repeat(this.tab.symbol, how_much) + line
+		// }
 
 		// remove some tabs in the beginning
-		value: function reduce_tabulation(line) {
+		value: function reduce_indentation(line) {
 			var how_much = arguments[1] === undefined ? 1 : arguments[1];
 
 			return line.substring(this.tab.symbol.length * how_much);
@@ -57,31 +54,48 @@ var Tabulator = (function () {
 			return matches[0].length / this.tab.symbol.length;
 		}
 	}, {
-		key: 'normalize_initial_tabulation',
-		value: function normalize_initial_tabulation(lines) {
+		key: 'extract_tabulation',
+		value: function extract_tabulation(lines) {
 			var _this = this;
 
-			// filter out blank lines,
-			// calculate each line's indentation,
-			// and get the minimum one
-			var minimum_indentation = lines.filter(function (line) {
-				return !(0, _helpers.is_blank)(line);
-			}).map(function (line) {
-				return _this.calculate_indentation(line);
-			}).reduce(function (minimum, indentation) {
-				return Math.min(minimum, indentation);
+			lines = lines
+			// preserve line indexes
+			.map(function (line, index) {
+				return { line: line, index: index };
+			})
+			// filter out blank lines
+			.filter(function (line) {
+				return !(0, _helpers.is_blank)(line.line);
+			});
+
+			// calculate each line's indentation
+			lines.forEach(function (line) {
+				var tabbed_line = line.line;
+
+				line.tabs = _this.calculate_indentation(line.line);
+				line.line = _this.reduce_indentation(line.line, line.tabs).trim();
+
+				// check for messed up space indentation
+				if ((0, _helpers.starts_with)(line.line, ' ')) {
+					throw new Error('Invalid indentation (some extra leading spaces) at line ' + line.index + ': "' + tabbed_line + '"');
+				}
+			});
+
+			// get the minimum indentation level
+			var minimum_indentation = lines.reduce(function (minimum, line) {
+				return Math.min(minimum, line.tabs);
 			}, Infinity);
 
 			// if there is initial tabulation missing - add it
 			if (minimum_indentation === 0) {
-				lines = lines.map(function (line) {
-					return _this.tabulate(line);
+				lines.forEach(function (line) {
+					line.tabs++;
 				});
 			}
 			// if there is excessive tabulation - trim it
 			else if (minimum_indentation > 1) {
-				lines = lines.map(function (line) {
-					return _this.reduce_tabulation(line, minimum_indentation - 1);
+				lines.forEach(function (line) {
+					line.tabs -= minimum_indentation - 1;
 				});
 			}
 
