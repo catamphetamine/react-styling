@@ -25,12 +25,17 @@ export default function styler(strings, ...values)
 // converts text to JSON object
 function parse_json_object(text)
 {
-	// ignore opening curly braces for now.
+	// ignore curly braces for now.
 	// maybe support curly braces along with tabulation in future
 	text = text.replace(/[\{\}]/g, '')
 
+	const lines = text.split('\n')
+
+	// helper class for dealing with tabulation
+	const tabulator = new Tabulator(Tabulator.determine_tabulation(lines))
+
 	// parse text into JSON object
-	const style_json = parse_lines(text.split('\n'))
+	const style_json = parse_lines(tabulator.extract_tabulation(lines))
 
 	// expand "modifier" style classes
 	return expand_modifier_style_classes(style_json)
@@ -41,56 +46,42 @@ function parse_json_object(text)
 function parse_lines(lines)
 {
 	// return empty object if there are no lines
-	if (!lines.length)
+	if (lines.length === 0)
 	{
 		return {}
 	}
 
 	// ensure there are no blank lines at the start
-	if (is_blank(lines[0]))
+	if (is_blank(lines[0].line))
 	{
 		lines.shift()
 		return parse_lines(lines)
 	}
 
-	// helper class for dealing with tabulation
-	const tabulator = new Tabulator(Tabulator.determine_tabulation(lines))
-
-	lines = tabulator.normalize_initial_tabulation(lines)
-	.filter(function(line)
+	lines = lines.filter(function(line)
 	{
-		// ignore blank lines,
+		// // ignore blank lines,
+		// if (is_blank(line))
+		// {
+		// 	return false
+		// }
+
 		// ignore single line comments (//)
-		return !is_blank(line) && !line.match(/^[\s]*\/\//)
-	})
-	.map(function(line, index)
-	{
-		// get this line indentation and also trim the indentation
-		const indentation = tabulator.calculate_indentation(line)
-		line = tabulator.reduce_tabulation(line, indentation)
-
-		// check for messed up space tabulation
-		if (starts_with(line, ' '))
+		if (line.line.match(/^[\s]*\/\//))
 		{
-			// #${line_index}
-			throw new Error(`Invalid tabulation (some extra leading spaces) at line: "${line}"`)
+			return false
 		}
 
-		// remove any trailing whitespace
-		line = line.trim()
-
-		const result = 
-		{
-			line          : line,
-			index         : index,
-			indentation   : indentation
-		}
-
-		return result
+		return true
 	})
 
 	// determine lines with indentation = 1 (child node entry lines)
-	const node_entry_lines = lines.filter(line_data => line_data.indentation === 1).map(line => line.index)
+	const node_entry_lines = lines.map((line, index) => 
+		{
+			return { tabs: line.tabs, index }
+		})
+		.filter(line => line.tabs === 1)
+		.map(line => line.index)
 
 	// deduce corresponding child node ending lines
 	const node_ending_lines = node_entry_lines.map(line_index => line_index - 1)
@@ -127,31 +118,28 @@ function parse_lines(lines)
 		}
 
 		// node's own styles
-		let styles = lines.filter(function(line_info)
+		let styles = lines.filter(function(line)
 		{
-			const line        = line_info.line
-			const indentation = line_info.indentation
-
 			// own styles always have indentation of 2
-			if (indentation !== 2)
+			if (line.tabs !== 2)
 			{
-				return
+				return false
 			}
 
 			// detect generic css style line
-			const colon_index = line.indexOf(':')
-			return (colon_index > 0 && colon_index < line.length - 1) && !starts_with(line, '@')
+			const colon_index = line.line.indexOf(':')
+			return (colon_index > 0 && colon_index < line.line.length - 1) && !starts_with(line.line, '@')
 		})
 
 		// this node child nodes and all their children, etc
-		let children_lines = lines.filter(function(line_info)
+		let children_lines = lines.filter(function(line)
 		{
-			return styles.indexOf(line_info) < 0
+			return styles.indexOf(line) < 0
 		})
 
 		// convert from line info to lines
-		styles = styles.map(line_info => line_info.line)
-		children_lines = children_lines.map(line_info => tabulator.tabulate(line_info.line, line_info.indentation - 1))
+		styles = styles.map(line => line.line)
+		children_lines.forEach(line => line.tabs--)
 
 		// generate JSON object for this node
 		const json = generate_node_json(name, styles, children_lines)

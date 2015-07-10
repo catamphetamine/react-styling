@@ -9,19 +9,19 @@ export default class Tabulator
 	}
 
 	// // has tab in the beginning
-	// is_tabulated(line)
+	// is_indentd(line)
 	// {
 	// 	return starts_with(line, this.tab.symbol)
 	// }
 
-	// add one tab in the beginning
-	tabulate(line, how_much = 1)
-	{
-		return repeat(this.tab.symbol, how_much) + line
-	}
+	// // add one tab in the beginning
+	// indent(line, how_much = 1)
+	// {
+	// 	return repeat(this.tab.symbol, how_much) + line
+	// }
 
 	// remove some tabs in the beginning
-	reduce_tabulation(line, how_much = 1)
+	reduce_indentation(line, how_much = 1)
 	{
 		return line.substring(this.tab.symbol.length * how_much)
 	}
@@ -39,25 +39,51 @@ export default class Tabulator
 		return matches[0].length / this.tab.symbol.length
 	}
 
-	normalize_initial_tabulation(lines)
+	extract_tabulation(lines)
 	{
-		// filter out blank lines,
-		// calculate each line's indentation,
-		// and get the minimum one
+		lines = lines
+			// preserve line indexes
+			.map((line, index) =>
+			{
+				return { line, index }
+			})
+			// filter out blank lines
+			.filter(line => !is_blank(line.line))
+			
+		// calculate each line's indentation
+		lines.forEach(line => 
+		{
+			const tabbed_line = line.line
+
+			line.tabs = this.calculate_indentation(line.line)
+			line.line = this.reduce_indentation(line.line, line.tabs).trim()
+
+			// check for messed up space indentation
+			if (starts_with(line.line, ' '))
+			{
+				throw new Error(`Invalid indentation (some extra leading spaces) at line ${line.index}: "${tabbed_line}"`)
+			}
+		})
+
+		// get the minimum indentation level
 		const minimum_indentation = lines
-			.filter(line => !is_blank(line))
-			.map(line => this.calculate_indentation(line))
-			.reduce((minimum, indentation) => Math.min(minimum, indentation), Infinity)
+			.reduce((minimum, line) => Math.min(minimum, line.tabs), Infinity)
 
 		// if there is initial tabulation missing - add it
 		if (minimum_indentation === 0)
 		{
-			lines = lines.map(line => this.tabulate(line))
+			lines.forEach(function(line)
+			{
+				line.tabs++
+			})
 		}
 		// if there is excessive tabulation - trim it
 		else if (minimum_indentation > 1)
 		{
-			lines = lines.map(line => this.reduce_tabulation(line, minimum_indentation - 1))
+			lines.forEach(function(line)
+			{
+				line.tabs -= minimum_indentation - 1
+			})
 		}
 
 		return lines
