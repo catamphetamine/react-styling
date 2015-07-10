@@ -97,21 +97,50 @@ const style = styler
         padding-top     : 0.2em
         padding-bottom  : 0.2em
 
-        .current
+        // notice the ampersand character here:
+        // this feature is called a "modifier" class 
+        // (see the explanation of this term below)
+        &current
           color            : #ffffff
           background-color : #000000
+
+        /*
+        multi
+        line
+        comment
+        here
+        */
+
+        .old-school-regular-css-syntax {
+          box-sizing: border-box;
+          color: black;
+        }
 
         @media (min-width: 320px)
           width: 100%
 
           :hover 
             background: white
+
+        curly_braces {
+          background: none
+
+          curly_braces {
+            background: transparent
+          }
+        }
+
+        yaml_style:
+          display: inline-block
+
+          python:
+            length: 99999px
 `
 ```
 
 The example is self-explanatory.
 
-Notice the dot before the "current" class - this feature is optional (you don't need to use it at all), and it means that this style class is a "modifier" and all the style from it's parent node will be included in this style class. In this example, the paddings, color, display and text-decoration from the "link" style class will be included in the "current" style class, so it works just like `.link { ... } .link.current { ... }` CSS selector. If you opt in to using the "modifiers" feature then you won't need to do manual merging like `style="extend({}, style.menu.item.link, style.menu.item.link.current)"`.
+Notice the ampersand before the "current" style class - this feature is optional (you don't need to use it at all), and it means that this style class is a "modifier" and all the style from its parent style class will be included in this style class. In this example, the paddings, color, display and text-decoration from the "link" style class will be included in the "current" style class, so it works just like LESS/SASS ampersand. If you opt in to using the "modifiers" feature then you won't need to do manual merging like `style="extend({}, style.menu.item.link, style.menu.item.link.current)"`.
 
 The CSS text in the example above will be transformed to this JSON object
 
@@ -155,6 +184,32 @@ The CSS text in the example above will be transformed to this JSON object
           {
             background: 'white'
           }
+        },
+
+        'old-school-regular-css-syntax':
+        {
+          boxSizing: 'border-box',
+          color: 'black'
+        },
+
+        curly_braces:
+        {
+          background: 'none',
+
+          curly_braces:
+          {
+            background: 'transparent'
+          }
+        },
+
+        yaml_style:
+        {
+          display: 'inline-block',
+
+          python:
+          {
+            length: '99999px'
+          }
         }
       }
     }
@@ -166,67 +221,13 @@ And that's it. No fancy stuff, it's just what this module does. You can then tak
 
 Pay attention to the tabulation as it's required for the whole thing to work properly. If you're one of those people who (for some strange reason) prefer spaces over tabs then you can still use it with spaces. Again, make sure that you keep all your spacing in order. And you can't mix tabs and spaces.
 
-There are no curly braces because they are a survival from the dark ages of 80s and the good old C language. Still you are free to use your curly braces for decoration - they'll simply be ignored.
+You can use your good old pure CSS syntax with curly braces, semicolons and dotted style class names (in this case the leading dots in CSS style class names will be omitted for later JSON object keying convenience).
 
-```js
-const style = styler
-`
-  menu {
-    list-style-type: none
+Curly braces are a survival from the dark ages of 80s and the good old C language. Still you are free to use your curly braces for decoration - they'll simply be filtered out.
 
-    item {
-      display: inline-block
+You can also use YAML-alike syntax if you're one of those Python people.
 
-      link {
-        display         : inline-block
-        text-decoration : none
-        color           : #000000
-
-        padding-left    : 0.4em
-        padding-right   : 0.4em
-        padding-top     : 0.2em
-        padding-bottom  : 0.2em
-
-        .current {
-          color            : #ffffff
-          background-color : #000000
-        }
-
-        @media (min-width: 320px) {
-          width: 100%
-
-          :hover {
-            background: white
-          }
-        }
-      }
-    }
-  }
-`
-```
-
-You can also use YAML-alike syntax if you're one of those Python people
-
-```js
-const style = styler
-`
-  menu:
-    list-style-type: none
-
-    item:
-      display: inline-block
-
-      link:
-        display         : inline-block
-        text-decoration : none
-        color           : #000000
-
-        padding-left    : 0.4em
-        padding-right   : 0.4em
-        padding-top     : 0.2em
-        padding-bottom  : 0.2em
-`
-```
+You can use both one-line comments and multiline comments.
 
 ### What's next
 

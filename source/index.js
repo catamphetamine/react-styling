@@ -19,12 +19,15 @@ export default function styler(strings, ...values)
 		i++
 	}
 
-	return parse_json_object(style)
+	return parse_style_json_object(style)
 }
 
 // converts text to JSON object
-function parse_json_object(text)
+function parse_style_json_object(text)
 {
+	// remove multiline comments
+	text = text.replace(/\/\*([\s\S]*?)\*\//g, '')
+
 	// ignore curly braces for now.
 	// maybe support curly braces along with tabulation in future
 	text = text.replace(/[\{\}]/g, '')
@@ -35,10 +38,42 @@ function parse_json_object(text)
 	const tabulator = new Tabulator(Tabulator.determine_tabulation(lines))
 
 	// parse text into JSON object
-	const style_json = parse_lines(tabulator.extract_tabulation(lines))
+	const style_json = parse_node_json([], tabulator.extract_tabulation(lines))
 
 	// expand "modifier" style classes
 	return expand_modifier_style_classes(style_json)
+}
+
+// (recursive function)
+// parse child nodes' lines (and this node's styles) into this node's style JSON object
+function parse_node_json(styles, children_lines)
+{
+	// transform this node's style lines from text to JSON properties and their values
+	const style_object = styles.map(function(style)
+	{
+		const parts = style.split(':')
+
+		let key   = parts[0].trim()
+		let value = parts[1].trim()
+
+		// support old CSS syntax
+		value = value.replace(/;$/, '')
+
+		// transform dashed key to camelCase key (it's required by React)
+		key = key.replace(/([-]{1}[a-z]{1})/g, character => character.substring(1).toUpperCase())
+
+		return { key, value }
+	})
+	// combine the styles into a JSON object
+	.reduce(function(styles, style)
+	{
+		styles[style.key] = style.value
+		return styles
+	}, 
+	{})
+
+	// parse child nodes and add them to this node's JSON object
+	return extend(style_object, parse_lines(children_lines))
 }
 
 // parses lines of text into a JSON object
@@ -51,29 +86,17 @@ function parse_lines(lines)
 		return {}
 	}
 
-	// ensure there are no blank lines at the start
-	if (is_blank(lines[0].line))
+	// remove single line comments
+	lines.forEach(function(line)
 	{
-		lines.shift()
-		return parse_lines(lines)
-	}
-
-	lines = lines.filter(function(line)
-	{
-		// // ignore blank lines,
-		// if (is_blank(line))
-		// {
-		// 	return false
-		// }
-
-		// ignore single line comments (//)
-		if (line.line.match(/^[\s]*\/\//))
-		{
-			return false
-		}
-
-		return true
+		// remove single line comments
+		line.line = line.line.replace(/\/\/.*/, '')
+		// remove any trailing whitespace
+		line.line = line.line.trim()
 	})
+
+	// filter out blank lines
+	lines = lines.filter(line => !is_blank(line.line))
 
 	// determine lines with indentation = 1 (child node entry lines)
 	const node_entry_lines = lines.map((line, index) => 
@@ -103,10 +126,16 @@ function parse_lines(lines)
 		let is_a_modifier = false
 
 		// detect modifier style classes
+		if (starts_with(name, '&'))
+		{
+			name = name.substring('&'.length)
+			is_a_modifier = true
+		}
+
+		// support old-school CSS syntax
 		if (starts_with(name, '.'))
 		{
 			name = name.substring('.'.length)
-			is_a_modifier = true
 		}
 
 		// if someone forgot a trailing colon in the style class name - trim it
@@ -142,7 +171,7 @@ function parse_lines(lines)
 		children_lines.forEach(line => line.tabs--)
 
 		// generate JSON object for this node
-		const json = generate_node_json(name, styles, children_lines)
+		const json = parse_node_json(styles, children_lines)
 
 		if (is_a_modifier)
 		{
@@ -157,46 +186,6 @@ function parse_lines(lines)
 		return nodes
 	}, 
 	{})
-}
-
-// a node in style JSON object
-// parse lines (using styles) into a JSON object with child nodes of this child node
-function generate_node_json(name, styles, children_lines)
-{
-	const object = {}
-
-	// transform styles from text to JSON objects
-	const own_style = styles.map(function(style)
-	{
-		const parts = style.split(':')
-
-		let key     = parts[0].trim()
-		const value = parts[1].trim()
-
-		// transform dashed key to camelCase key (it's required by React)
-		key = key.replace(/([-]{1}[a-z]{1})/g, character => character.substring(1).toUpperCase())
-
-		return { key, value }
-	})
-	// add own styles to the object
-	.reduce(function(own_style, style)
-	{
-		own_style[style.key] = style.value
-		return own_style
-	}, 
-	{})
-
-	// apply the style to the object itself
-	extend(object, own_style)
-
-	// process child lines recursively
-	const children = parse_lines(children_lines)
-
-	// add children to the parent
-	extend(object, children)
-
-	// end this block
-	return object
 }
 
 // expand modifier style classes

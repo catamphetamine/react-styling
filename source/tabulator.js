@@ -8,18 +8,6 @@ export default class Tabulator
 		this.tab = tab
 	}
 
-	// // has tab in the beginning
-	// is_indentd(line)
-	// {
-	// 	return starts_with(line, this.tab.symbol)
-	// }
-
-	// // add one tab in the beginning
-	// indent(line, how_much = 1)
-	// {
-	// 	return repeat(this.tab.symbol, how_much) + line
-	// }
-
 	// remove some tabs in the beginning
 	reduce_indentation(line, how_much = 1)
 	{
@@ -49,19 +37,18 @@ export default class Tabulator
 			})
 			// filter out blank lines
 			.filter(line => !is_blank(line.line))
-			
+
 		// calculate each line's indentation
 		lines.forEach(line => 
 		{
-			const tabbed_line = line.line
-
+			line.original_line = line.line
 			line.tabs = this.calculate_indentation(line.line)
-			line.line = this.reduce_indentation(line.line, line.tabs).trim()
+			line.line = this.reduce_indentation(line.line, line.tabs)
 
 			// check for messed up space indentation
 			if (starts_with(line.line, ' '))
 			{
-				throw new Error(`Invalid indentation (some extra leading spaces) at line ${line.index}: "${tabbed_line}"`)
+				throw new Error(`Invalid indentation (some extra leading spaces) at line ${line.index}: "${line.original_line}"`)
 			}
 		})
 
@@ -84,6 +71,12 @@ export default class Tabulator
 			{
 				line.tabs -= minimum_indentation - 1
 			})
+		}
+
+		// check for messed up tabulation
+		if (lines[0].tabs !== 1)
+		{
+			throw new Error(`Invalid indentation at line ${lines[0].index}: "${lines[0].original_line}"`)
 		}
 
 		return lines

@@ -25,7 +25,7 @@ describe('styler', function()
 						padding-top     : 0.2em
 						padding-bottom  : 0.2em
 
-						.current
+						&current
 							color            : #ffffff
 							background-color : #000000
 
@@ -106,7 +106,7 @@ describe('styler', function()
 						padding-top     : 0.2em
 						padding-bottom  : 0.2em
 
-						.current
+						&current
 						{
 							color            : #ffffff
 							background-color : #000000
@@ -193,7 +193,7 @@ describe('styler', function()
 						padding-top     : 0.2em
 						padding-bottom  : 0.2em
 
-						.current:
+						&current:
 							color            : #ffffff
 							background-color : #000000
 		`
@@ -257,7 +257,7 @@ describe('styler', function()
                   padding-top     : 0.2em
                   padding-bottom  : 0.2em
 
-                  .current
+                  &current
                      color            : #ffffff
                      background-color : #000000
       `
@@ -321,7 +321,7 @@ menu
          padding-top     : 0.2em
          padding-bottom  : 0.2em
 
-         .current
+         &current
             color            : #ffffff
             background-color : #000000
       `
@@ -365,23 +365,28 @@ menu
 		style.should.deep.equal(object)
 	})
 
-	it('should support nested modifiers', function()
+	it('should support comments', function()
 	{
 		const style = styler
 		`
 			menu
 				list-style-type: none
 
-				.one
-					display: inline-block
+				// notice the dot character here.
+				// this is called a "modifier" class 
+				// (see the explanation of this term below)
+				&one
+					display: inline-block // inline-block here
 
-					.two
+					/* 
+					multi
+					line
+					comment
+					*/
+					two
 						display         : block
 						text-decoration : none
 						color           : #000000
-
-					.three
-						color           : #ffffff
 		`
 
 		const object =
@@ -397,18 +402,120 @@ menu
 
 					two:
 					{
-						listStyleType: 'none',
 						display        : 'block',
 						textDecoration : 'none',
 						color          : '#000000'
+					}
+				}
+			}
+		}
+
+		style.should.deep.equal(object)
+	})
+
+	it('should support nested modifiers', function()
+	{
+		const style = styler
+		`
+			menu
+				list-style-type: none
+
+				// notice the dot character here.
+				// this is called a "modifier" class 
+				// (see the explanation of this term below)
+				&one
+					display: inline-block
+					background: none
+
+					// this is a "modifier" class
+					&two
+						display         : block
+						text-decoration : none
+						color           : #000000
+
+					// this is a "modifier" class
+					&three
+						color           : #ffffff
+		`
+
+		const object =
+		{
+			menu:
+			{
+				listStyleType: 'none',
+
+				one:
+				{
+					listStyleType  : 'none',
+					display        : 'inline-block',
+					background     : 'none',
+
+					two:
+					{
+						listStyleType  : 'none',
+						display        : 'block',
+						textDecoration : 'none',
+						color          : '#000000',
+						background     : 'none'
 					},
 
 					three:
 					{
 						listStyleType  : 'none',
 						display        : 'inline-block',
-						color          : '#ffffff'
+						color          : '#ffffff',
+						background     : 'none'
 					}
+				}
+			}
+		}
+
+		style.should.deep.equal(object)
+	})
+
+	it('should support old school CSS syntax', function()
+	{
+		const style = styler
+		`
+			.old-school-regular-css-syntax {
+				box-sizing: border-box;
+
+				&.modifier {
+					border-width: 1px;
+				}
+			}
+
+			.blah {
+				border: none;
+				color: white;
+
+				.nested {
+					color: black;
+				}
+			}
+		`
+
+		const object =
+		{
+			'old-school-regular-css-syntax':
+			{
+				boxSizing: 'border-box',
+
+				modifier:
+				{
+					boxSizing: 'border-box',
+					borderWidth: '1px'
+				}
+			},
+
+			blah:
+			{
+				border: 'none',
+				color: 'white',
+
+				nested:
+				{
+					color: 'black'
 				}
 			}
 		}
