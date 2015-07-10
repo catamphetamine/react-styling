@@ -22,18 +22,6 @@ var Tabulator = (function () {
 	_createClass(Tabulator, [{
 		key: 'reduce_indentation',
 
-		// // has tab in the beginning
-		// is_indentd(line)
-		// {
-		// 	return starts_with(line, this.tab.symbol)
-		// }
-
-		// // add one tab in the beginning
-		// indent(line, how_much = 1)
-		// {
-		// 	return repeat(this.tab.symbol, how_much) + line
-		// }
-
 		// remove some tabs in the beginning
 		value: function reduce_indentation(line) {
 			var how_much = arguments[1] === undefined ? 1 : arguments[1];
@@ -70,14 +58,13 @@ var Tabulator = (function () {
 
 			// calculate each line's indentation
 			lines.forEach(function (line) {
-				var tabbed_line = line.line;
-
+				line.original_line = line.line;
 				line.tabs = _this.calculate_indentation(line.line);
-				line.line = _this.reduce_indentation(line.line, line.tabs).trim();
+				line.line = _this.reduce_indentation(line.line, line.tabs);
 
 				// check for messed up space indentation
 				if ((0, _helpers.starts_with)(line.line, ' ')) {
-					throw new Error('Invalid indentation (some extra leading spaces) at line ' + line.index + ': "' + tabbed_line + '"');
+					throw new Error('Invalid indentation (some extra leading spaces) at line ' + line.index + ': "' + line.original_line + '"');
 				}
 			});
 
@@ -97,6 +84,11 @@ var Tabulator = (function () {
 				lines.forEach(function (line) {
 					line.tabs -= minimum_indentation - 1;
 				});
+			}
+
+			// check for messed up tabulation
+			if (lines[0].tabs !== 1) {
+				throw new Error('Invalid indentation at line ' + lines[0].index + ': "' + lines[0].original_line + '"');
 			}
 
 			return lines;
