@@ -54,6 +54,8 @@ $ npm install react-styling
 
 ## Usage
 
+This module uses a ES6 feature called [template strings](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/template_strings) which allows you to write multiline strings (finally). You can still use this module with the old ES5 syntax passing it a regular string, but it's much more convenient for you to just use [Babel](https://babeljs.io/docs/setup/) for ES6 to ES5 conversion (everyone out there does it by the way).
+
 ```js
 import React from 'react'
 import styler from 'react-styling'
