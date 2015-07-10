@@ -112,6 +112,14 @@ const style = styler
           color: black;
         }
 
+        .scss_less {
+          color: white;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+
         curly_braces_fan {
           background: none
 
@@ -173,6 +181,17 @@ The CSS text in the example above will be transformed to this JSON object
           color: 'black'
         },
 
+        scss_less:
+        {
+          color: 'white',
+
+          ':hover' 
+          {
+            color: 'white',
+            textDecoration: 'underline'
+          }
+        },
+        
         curly_braces_fan:
         {
           background: 'none',
