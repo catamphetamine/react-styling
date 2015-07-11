@@ -104,7 +104,6 @@ const style = styler
         multi
         line
         comment
-        here
         */
 
         .old-school-regular-css-syntax {
@@ -191,7 +190,7 @@ The CSS text in the example above will be transformed to this JSON object
             textDecoration: 'underline'
           }
         },
-        
+
         curly_braces_fan:
         {
           background: 'none',
