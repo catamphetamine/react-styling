@@ -9,6 +9,7 @@
     "babel": "^5.6.14",
     "babel-core": "^5.6.15",
     "babel-loader": "^5.3.1",
+    "babel-runtime": "^5.6.20",
     "chai": "^3.0.0",
     "coveralls": "^2.11.2",
     "enhanced-resolve": "^0.8.6",
@@ -29,8 +30,8 @@
   },
   "scripts": {
     "test": "mocha --compilers js:babel/register --bail --reporter spec test/",
-    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --compilers js:babel/register --reporter dot test/",
-    "test-travis": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --compilers js:babel/register --reporter spec test/",
+    "test-cov": "./node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha -- --compilers js:babel/register --reporter dot test/",
+    "test-travis": "./node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --compilers js:babel/register --reporter spec test/",
     "gh-pages": "webpack --action=gh-pages --config ./config",
     "deploy-gh-pages": "TARGET=gh-pages node ./config/deploy-gh-pages.js",
     "build": "npm-run-all build-regular build-minified",

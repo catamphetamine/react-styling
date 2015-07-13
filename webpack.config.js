@@ -14,15 +14,12 @@ var pkg = require('./package.json')
 
 var process_arguments = minimist(process.argv.slice(2))
 
-console.log('@@@@@@@@@@@@ process_arguments')
-console.log(process_arguments)
-
 var action = process_arguments.action
 
 if (!action)
 {
-	console.log 'Action required.'
-	console.log 'Usage: webpack --target=[dev|gh-pages|build|build-minified]'
+	console.log('Action required.')
+	console.log('Usage: webpack --target=[dev|gh-pages|build|build-minified]')
 	return
 }
 
@@ -256,3 +253,4 @@ switch (action)
 		})
 
 		break
+}

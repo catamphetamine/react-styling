@@ -252,9 +252,6 @@ If you'd like to start working on this project you'll need to install some globa
 
 ```
 sudo npm install --global webpack
-sudo npm install --global babel
-sudo npm install --global mocha
-sudo npm install --global istanbul
 ```
 
 Then you do your usual `npm install` and then everything should work.
