@@ -9,6 +9,7 @@ export default function styler(strings, ...values)
 
 	// restore the whole string from "strings" and "values" parts
 	let i = 0
+	/* istanbul ignore next */
 	while (i < strings.length)
 	{
 		style += strings[i]

@@ -256,8 +256,6 @@ sudo npm install --global webpack
 
 Then you do your usual `npm install` and then everything should work.
 
-This module is written in ES6.
-
 ## License
 
 [MIT](LICENSE)
