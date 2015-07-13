@@ -259,7 +259,7 @@ sudo npm install --global istanbul
 
 Then you do your usual `npm install` and then everything should work.
 
-This module is written entirely in ES6.
+This module is written in ES6.
 
 ## License
 
