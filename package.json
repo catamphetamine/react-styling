@@ -18,6 +18,7 @@
     "mkdirp": "^0.5.1",
     "mocha": "^2.2.5",
     "node-libs-browser": "^0.5.2",
+    "npm-run-all": "^1.2.6",
     "tapable": "^0.1.9",
     "uglify-js": "^2.4.23",
     "watchpack": "^0.2.8",
@@ -31,9 +32,12 @@
     "test-travis": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec test/",
     "gh-pages": "webpack --action=gh-pages --config ./config",
     "deploy-gh-pages": "TARGET=gh-pages node ./config/deploy-gh-pages.js",
-    "build": "webpack --action=build && webpack --action=build-minified",
+    "build": "npm-run-all build-regular build-minified",
+    "build-regular": "webpack --action=build",
+    "build-minified": "webpack --action=build-minified",
     "build-modules": "babel ./source --out-dir ./build-modules",
-    "preversion": "npm run test && npm run build && npm run build-modules && git commit --all --message=\"Update build\""
+    "commit_new_build": "git commit --all --message=\"Update build\"",
+    "preversion": "run-scripts test build build-modules commit_new_build"
   },
   "repository": {
     "type": "git",

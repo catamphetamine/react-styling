@@ -14,9 +14,12 @@ var pkg = require('./package.json')
 
 var process_arguments = minimist(process.argv.slice(2))
 
+console.log('@@@@@@@@@@@@ process_arguments')
+console.log(process_arguments)
+
 var action = process_arguments.action
 
-if (!process_arguments.action)
+if (!action)
 {
 	console.log 'Action required.'
 	console.log 'Usage: webpack --target=[dev|gh-pages|build|build-minified]'
@@ -25,6 +28,8 @@ if (!process_arguments.action)
 
 var Root_folder = path.resolve(__dirname)
 var Demo_folder = 'demo'
+
+var babel = 'babel?optional[]=runtime&stage=0'
 
 var config = 
 {
@@ -97,7 +102,7 @@ var merge_build = merge.bind(null,
 		[
 			{
 				test: /\.jsx?$/,
-				loaders: ['babel'],
+				loaders: [babel],
 				include: config.paths.src
 			}
 		]
@@ -155,7 +160,7 @@ switch (action)
 				[
 					{
 						test: /\.jsx?$/,
-						loaders: ['react-hot', 'babel'],
+						loaders: ['react-hot', babel],
 						include: [config.paths.demo, config.paths.src]
 					}
 				]
@@ -209,7 +214,7 @@ switch (action)
 				[
 					{
 						test: /\.jsx?$/,
-						loaders: ['babel'],
+						loaders: [babel],
 						include: [config.paths.demo, config.paths.src]
 					}
 				]
