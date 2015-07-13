@@ -3,9 +3,9 @@
 [![NPM Version][npm-image]][npm-url]
 [![NPM Downloads][downloads-image]][downloads-url]
 [![Build Status][travis-image]][travis-url]
+[![Test Coverage][coveralls-image]][coveralls-url]
 
 <!---
-[![Test Coverage][coveralls-image]][coveralls-url]
 [![Gratipay][gratipay-image]][gratipay-url]
 -->
 
@@ -254,6 +254,7 @@ If you'd like to start working on this project you'll need to install some globa
 sudo npm install --global webpack
 sudo npm install --global babel
 sudo npm install --global mocha
+sudo npm install --global istanbul
 ```
 
 Then you do your usual `npm install` and then everything should work.
@@ -269,10 +270,10 @@ This module is written entirely in ES6.
 [travis-url]: https://travis-ci.org/halt-hammerzeit/react-styling
 [downloads-image]: https://img.shields.io/npm/dm/react-styling.svg
 [downloads-url]: https://npmjs.org/package/react-styling
+[coveralls-image]: https://img.shields.io/coveralls/halt-hammerzeit/react-styling/master.svg
+[coveralls-url]: https://coveralls.io/r/halt-hammerzeit/react-styling?branch=master
 
 <!---
-[coveralls-image]: https://img.shields.io/coveralls/expressjs/session/master.svg
-[coveralls-url]: https://coveralls.io/r/expressjs/session?branch=master
 [gratipay-image]: https://img.shields.io/gratipay/dougwilson.svg
 [gratipay-url]: https://gratipay.com/dougwilson/
 -->
