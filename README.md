@@ -95,7 +95,7 @@ const style = styler
 
         // notice the ampersand character here:
         // this feature is called a "modifier" class 
-        // (see the ["Modifiers" section](#modifiers) of this document)
+        // (see the "Modifiers" section of this document)
         &current
           color            : #ffffff
           background-color : #000000
