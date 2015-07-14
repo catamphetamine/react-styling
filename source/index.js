@@ -53,13 +53,25 @@ function parse_node_json(styles, children_lines)
 		const parts = style.split(':')
 
 		let key   = parts[0].trim()
-		let value = parts[1].trim()
-
-		// support old CSS syntax
-		value = value.replace(/;$/, '')
+		let value = parts[1]
 
 		// transform dashed key to camelCase key (it's required by React)
 		key = key.replace(/([-]{1}[a-z]{1})/g, character => character.substring(1).toUpperCase())
+
+		// support old CSS syntax
+		value = value.replace(/;$/, '').trim()
+
+		// check if the value can be parsed into an integer
+		if (String(parseInt(value)) === value)
+		{
+			value = parseInt(value)
+		}
+
+		// check if the value can be parsed into a float
+		if (String(parseFloat(value)) === value)
+		{
+			value = parseFloat(value)
+		}
 
 		return { key, value }
 	})
@@ -126,9 +138,11 @@ function parse_children(lines)
 				return false
 			}
 
-			// detect generic css style line
+			// detect generic css style line (skip modifier classes and media queries)
 			const colon_index = line.line.indexOf(':')
-			return (colon_index > 0 && colon_index < line.line.length - 1) && !starts_with(line.line, '@')
+			return !starts_with(line.line, '&') 
+				&& !starts_with(line.line, '@') 
+				&& (colon_index > 0 && colon_index < line.line.length - 1)
 		})
 
 		// the lines corresponding to this child node's child nodes and all their children, etc
@@ -207,7 +221,8 @@ function split_lines_by_child_nodes(lines)
 // expand modifier style classes
 function expand_modifier_style_classes(node)
 {
-	const style = get_node_style(node)
+	const style          = get_node_style(node)
+	const pseudo_classes = get_node_pseudo_classes(node)
 
 	Object.keys(node)
 	// get all modifier style class nodes
@@ -218,8 +233,8 @@ function expand_modifier_style_classes(node)
 		// delete the modifier flags
 		delete node[name]._is_a_modifier
 
-		// include parent node styles into the modifier style class node
-		node[name] = extend({}, style, node[name])
+		// include parent node's styles and pseudo-classes into the modifier style class node
+		node[name] = extend({}, style, pseudo_classes, node[name])
 	})
 
 	Object.keys(node)
@@ -246,6 +261,23 @@ function get_node_style(node)
 	{
 		style[style_property] = node[style_property]
 		return style
+	}, 
+	{})
+}
+
+// extracts root pseudo-classes of this style class node
+function get_node_pseudo_classes(node)
+{
+	return Object.keys(node)
+	// get all child style classes this style class node, which start with a colon and aren't modifiers
+	.filter(property => typeof(node[property]) === 'object' 
+		&& (starts_with(property, ':') || starts_with(property, '@')) 
+		&& !node[property]._is_a_modifier)
+	// for each child style class of this style class node
+	.reduce(function(pseudo_classes, name)
+	{
+		pseudo_classes[name] = node[name]
+		return pseudo_classes
 	}, 
 	{})
 }

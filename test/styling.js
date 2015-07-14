@@ -31,11 +31,11 @@ describe('styler', function()
 							color            : #ffffff
 							background-color : #000000
 
-						@media (min-width: 320px)
-							width: 100%
+							@media (min-width: 320px)
+								width: 100%
 
-							:hover 
-								background: white
+								:hover 
+									background: white
 		`
 
 		const object =
@@ -67,16 +67,16 @@ describe('styler', function()
 							paddingRight    : '0.4em',
 							paddingTop      : '0.2em',
 							paddingBottom   : '0.2em',
-							backgroundColor : '#000000'
-						},
+							backgroundColor : '#000000',
 
-						'@media (min-width: 320px)': 
-						{
-							width: '100%',
-
-							':hover': 
+							'@media (min-width: 320px)': 
 							{
-								background: 'white'
+								width: '100%',
+
+								':hover': 
+								{
+									background: 'white'
+								}
 							}
 						}
 					}
@@ -113,14 +113,6 @@ describe('styler', function()
 							color            : #ffffff
 							background-color : #000000
 						}
-
-						@media (min-width: 320px) {
-							width: 100%
-
-							:hover {
-								background: white
-							}
-						}
 					}
 				}
 			}
@@ -156,16 +148,6 @@ describe('styler', function()
 							paddingRight    : '0.4em',
 							paddingTop      : '0.2em',
 							paddingBottom   : '0.2em'
-						},
-
-						'@media (min-width: 320px)': 
-						{
-							width: '100%',
-
-							':hover': 
-							{
-								background: 'white'
-							}
 						}
 					}
 				}
@@ -518,6 +500,160 @@ menu
 				nested:
 				{
 					color: 'black'
+				}
+			}
+		}
+
+		style.should.deep.equal(object)
+	})
+
+	it('should preserve pseudo-classes and media queries in modifiers', function()
+	{
+		const style = styler
+		`
+  droids
+    padding : 0
+
+    droid
+      border-color : black
+      border-style : solid
+      border-width : 1px 1px 0 1px
+      cursor       : pointer
+      list-style   : none
+      padding      : 12px
+
+      :hover
+        background : #eee
+
+      @media-query-test
+        box-sizing : border-box
+
+      &@non-media-query-test
+        background : black
+
+      &:this_class_wont_be_copied_into_modifiers_because_it_is_itself_a_modifier
+        background : transparent
+
+      &:first
+        border-radius : 12px 12px 0 0
+
+      &:last
+        border-radius : 0 0 12px 12px
+        border-width  : 1px
+		`
+
+		const object =
+		{
+			droids:
+			{
+				padding: 0,
+
+				droid:
+				{
+					borderColor : 'black',
+					borderStyle : 'solid',
+					borderWidth : '1px 1px 0 1px',
+					cursor      : 'pointer',
+					listStyle   : 'none',
+					padding     : '12px',
+
+					':hover':
+					{
+						background : '#eee'
+					},
+
+					'@media-query-test':
+					{
+						boxSizing : 'border-box'
+					},
+
+					'@non-media-query-test':
+					{
+						borderColor : 'black',
+						borderStyle : 'solid',
+						borderWidth : '1px 1px 0 1px',
+						cursor      : 'pointer',
+						listStyle   : 'none',
+						padding     : '12px',
+
+						background : 'black',
+
+						':hover':
+						{
+							background : '#eee'
+						},
+
+						'@media-query-test':
+						{
+							boxSizing : 'border-box'
+						}
+					},
+
+					':this_class_wont_be_copied_into_modifiers_because_it_is_itself_a_modifier':
+					{
+						borderColor : 'black',
+						borderStyle : 'solid',
+						borderWidth : '1px 1px 0 1px',
+						cursor      : 'pointer',
+						listStyle   : 'none',
+						padding     : '12px',
+
+						background : 'transparent',
+
+						':hover':
+						{
+							background : '#eee'
+						},
+
+						'@media-query-test':
+						{
+							boxSizing : 'border-box'
+						}
+					},
+
+					':first':
+					{
+						borderColor : 'black',
+						borderStyle : 'solid',
+						borderWidth : '1px 1px 0 1px',
+						cursor      : 'pointer',
+						listStyle   : 'none',
+						padding     : '12px',
+
+						borderRadius : '12px 12px 0 0',
+
+						':hover':
+						{
+							background : '#eee'
+						},
+
+						'@media-query-test':
+						{
+							boxSizing : 'border-box'
+						}
+					},
+
+					':last':
+					{
+						borderColor : 'black',
+						borderStyle : 'solid',
+						cursor      : 'pointer',
+						listStyle   : 'none',
+						padding     : '12px',
+
+						borderRadius : '0 0 12px 12px',
+						borderWidth  : '1px',
+
+						':hover':
+						{
+							background : '#eee'
+						},
+
+						'@media-query-test':
+						{
+							boxSizing : 'border-box'
+						}
+					}
 				}
 			}
 		}

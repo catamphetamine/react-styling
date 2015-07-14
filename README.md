@@ -44,7 +44,7 @@ It allows you to (citation):
   * Keyframes animation helper
   * ES6 class and createClass support
 
-And you can use this module with this Radium thing too: write you styles in text, then transform the text using react-styling into a JSON object, and then use that JSON object with Radium, and it will work. If you opt in to use the "modifiers" feature of this module then you won't have to write `style={[style.a, style.a.b]}`, you can just write `style={style.a.b}`.
+And you can use this module with this [Radium](https://github.com/FormidableLabs/radium) thing too: write you styles in text, then transform the text using react-styling into a JSON object, and then use that JSON object with [Radium](https://github.com/FormidableLabs/radium), and it will work. If you opt in to use the "modifiers" feature of this module then you won't have to write `style={[style.a, style.a.b]}`, you can just write `style={style.a.b}`.
 
 ## Installation
 
@@ -95,7 +95,7 @@ const style = styler
 
         // notice the ampersand character here:
         // this feature is called a "modifier" class 
-        // (see the explanation of this term below)
+        // (see the "Modifiers" section of this document below)
         &current
           color            : #ffffff
           background-color : #000000
@@ -142,11 +142,7 @@ const style = styler
 `
 ```
 
-The example is self-explanatory.
-
-Notice the ampersand before the "current" style class - this feature is optional (you don't need to use it at all), and it means that this style class is a "modifier" and all the style from its parent style class will be included in this style class. In this example, the padding, color, display and text-decoration from the "link" style class will be included in the "current" style class, so it works just like LESS/SASS ampersand. If you opt in to using the "modifiers" feature then you won't need to do manual merging like `style="extend({}, style.menu.item.link, style.menu.item.link.current)"`.
-
-The CSS text in the example above will be transformed to this JSON object
+The example is self-explanatory. The CSS text in the example above will be transformed to this JSON object
 
 ```js
 {
@@ -238,6 +234,12 @@ You can also use YAML-alike syntax if you're one of those Python people.
 
 You can use both one-line comments and multiline comments.
 
+### Modifiers
+
+In the example above, notice the ampersand before the "current" style class - this feature is optional (you don't need to use it at all), and it means that this style class is a "modifier" and all the style from its parent style class will be included in this style class. In this example, the padding, color, display and text-decoration from the "link" style class will be included in the "current" style class, so it works just like LESS/SASS ampersand. If you opt in to using the "modifiers" feature then you won't need to do manual merging like `style="extend({}, style.menu.item.link, style.menu.item.link.current)"`.
+
+Modifiers, when populated with the parent's styles, will also be populated with all the parent's pseudo-classes (those ones starting with a colon) and media queries (those ones starting with an at). This is done for better and seamless integration with [Radium](https://github.com/FormidableLabs/radium). [Featured in Radium FAQ](https://github.com/FormidableLabs/radium/blob/master/docs/faq/README.md) by the way.
+
 ### What's next
 
 I can add the features you want (or you can do it). I can work on making errors more user friendly and helpful if anyone else uses this module.
@@ -248,13 +250,7 @@ Maybe I could also write a webpack loader to perform text-to-json conversion at 
 
 ### Development
 
-If you'd like to start working on this project you'll need to install some global stuff
-
-```
-sudo npm install --global webpack
-```
-
-Then you do your usual `npm install` and then everything should work.
+If you'd like to start working on this project you'll need to run your usual `npm install` and then everything should work: `npm test`
 
 ## License
 
