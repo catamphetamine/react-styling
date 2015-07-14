@@ -29,14 +29,14 @@
     "webpack-merge": "^0.1.2"
   },
   "scripts": {
-    "test": "mocha --compilers js:babel/register --bail --reporter spec test/",
-    "test-cov": "./node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha -- --compilers js:babel/register --reporter dot test/",
-    "test-travis": "./node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --compilers js:babel/register --reporter spec test/",
-    "gh-pages": "webpack --action=gh-pages --config ./config",
+    "test": "mocha --compilers js:babel/register --colors --bail --reporter spec test/",
+    "test-cov": "./node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha -- --compilers js:babel/register --colors --reporter dot test/",
+    "test-travis": "./node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --compilers js:babel/register --colors --reporter spec test/",
+    "gh-pages": "webpack --action=gh-pages --colors --config ./config",
     "deploy-gh-pages": "TARGET=gh-pages node ./config/deploy-gh-pages.js",
     "build": "npm-run-all build-regular build-minified",
-    "build-regular": "webpack --action=build",
-    "build-minified": "webpack --action=build-minified",
+    "build-regular": "webpack --action=build --colors",
+    "build-minified": "webpack --action=build-minified --colors",
     "build-modules": "babel ./source --out-dir ./build-modules",
     "commit_new_build": "git commit --all --message=\"Update build\"",
     "preversion": "npm-run-all test build build-modules commit_new_build"
