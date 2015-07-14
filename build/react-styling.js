@@ -123,15 +123,25 @@ return /******/ (function(modules) { // webpackBootstrap
 			var parts = style.split(':');
 	
 			var key = parts[0].trim();
-			var value = parts[1].trim();
-	
-			// support old CSS syntax
-			value = value.replace(/;$/, '');
+			var value = parts[1];
 	
 			// transform dashed key to camelCase key (it's required by React)
 			key = key.replace(/([-]{1}[a-z]{1})/g, function (character) {
 				return character.substring(1).toUpperCase();
 			});
+	
+			// support old CSS syntax
+			value = value.replace(/;$/, '').trim();
+	
+			// check if the value can be parsed into an integer
+			if (String(parseInt(value)) === value) {
+				value = parseInt(value);
+			}
+	
+			// check if the value can be parsed into a float
+			if (String(parseFloat(value)) === value) {
+				value = parseFloat(value);
+			}
 	
 			return { key: key, value: value };
 		})
@@ -189,9 +199,9 @@ return /******/ (function(modules) { // webpackBootstrap
 					return false;
 				}
 	
-				// detect generic css style line
+				// detect generic css style line (skip modifier classes and media queries)
 				var colon_index = line.line.indexOf(':');
-				return colon_index > 0 && colon_index < line.line.length - 1 && !(0, _helpers.starts_with)(line.line, '@');
+				return !(0, _helpers.starts_with)(line.line, '&') && !(0, _helpers.starts_with)(line.line, '@') && (colon_index > 0 && colon_index < line.line.length - 1);
 			});
 	
 			// the lines corresponding to this child node's child nodes and all their children, etc
@@ -277,6 +287,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// expand modifier style classes
 	function expand_modifier_style_classes(node) {
 		var style = get_node_style(node);
+		var pseudo_classes = get_node_pseudo_classes(node);
 	
 		_Object$keys(node)
 		// get all modifier style class nodes
@@ -288,8 +299,8 @@ return /******/ (function(modules) { // webpackBootstrap
 			// delete the modifier flags
 			delete node[name]._is_a_modifier;
 	
-			// include parent node styles into the modifier style class node
-			node[name] = (0, _helpers.extend)({}, style, node[name]);
+			// include parent node's styles and pseudo-classes into the modifier style class node
+			node[name] = (0, _helpers.extend)({}, style, pseudo_classes, node[name]);
 		});
 	
 		_Object$keys(node)
@@ -317,6 +328,20 @@ return /******/ (function(modules) { // webpackBootstrap
 		.reduce(function (style, style_property) {
 			style[style_property] = node[style_property];
 			return style;
+		}, {});
+	}
+	
+	// extracts root pseudo-classes of this style class node
+	function get_node_pseudo_classes(node) {
+		return _Object$keys(node)
+		// get all child style classes this style class node, which start with a colon and aren't modifiers
+		.filter(function (property) {
+			return typeof node[property] === 'object' && ((0, _helpers.starts_with)(property, ':') || (0, _helpers.starts_with)(property, '@')) && !node[property]._is_a_modifier;
+		})
+		// for each child style class of this style class node
+		.reduce(function (pseudo_classes, name) {
+			pseudo_classes[name] = node[name];
+			return pseudo_classes;
 		}, {});
 	}
 	module.exports = exports['default'];
