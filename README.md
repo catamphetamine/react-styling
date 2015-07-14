@@ -168,55 +168,55 @@ The example is self-explanatory. The CSS text in the example above will be trans
           color           : '#ffffff',
           backgroundColor : '#000000',
           padding         : '0.4em'
-        },
-
-        'old-school-regular-css-syntax':
-        {
-          boxSizing: 'border-box',
-          color: 'black'
-        },
-
-        scss_less:
-        {
-          color: 'white',
-
-          ':hover' 
-          {
-            color: 'white',
-            textDecoration: 'underline'
-          }
-        },
-
-        curly_braces_fan:
-        {
-          background: 'none',
-
-          curly_braces_fan_number_two:
-          {
-            background: 'transparent'
-          }
-        },
-
-        YAML_fan:
-        {
-          display: 'inline-block',
-
-          python:
-          {
-            length: '99999px'
-          }
-        },
-
-        '@media (min-width: 320px)': 
-        {
-          width: '100%',
-
-          ':hover': 
-          {
-            background: 'white'
-          }
         }
       }
+    }
+  },
+
+  'old-school-regular-css-syntax':
+  {
+    boxSizing: 'border-box',
+    color: 'black'
+  },
+
+  scss_less:
+  {
+    color: 'white',
+
+    ':hover' 
+    {
+      color: 'white',
+      textDecoration: 'underline'
+    }
+  },
+
+  curly_braces_fan:
+  {
+    background: 'none',
+
+    curly_braces_fan_number_two:
+    {
+      background: 'transparent'
+    }
+  },
+
+  YAML_fan:
+  {
+    display: 'inline-block',
+
+    python:
+    {
+      length: '99999px'
+    }
+  },
+
+  '@media (min-width: 320px)': 
+  {
+    width: '100%',
+
+    ':hover': 
+    {
+      background: 'white'
     }
   }
 }
