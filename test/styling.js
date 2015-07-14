@@ -36,6 +36,7 @@ describe('styler', function()
 
 								:hover 
 									background: white
+									whatever: 1.3
 		`
 
 		const object =
@@ -75,7 +76,8 @@ describe('styler', function()
 
 								':hover': 
 								{
-									background: 'white'
+									background: 'white',
+									whatever: 1.3
 								}
 							}
 						}
