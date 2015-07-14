@@ -79,7 +79,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		// restore the whole string from "strings" and "values" parts
 		var i = 0;
-		/* istanbul ignore next */
 		while (i < strings.length) {
 			style += strings[i];
 	
@@ -646,6 +645,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	// extends the first object with
+	/* istanbul ignore next: some weird transpiled code, not testable */
 	
 	function extend(_x, _x2, _x3) {
 		var _this = this,
@@ -1061,9 +1061,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			key: 'reduce_indentation',
 	
 			// remove some tabs in the beginning
-			value: function reduce_indentation(line) {
-				var how_much = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
-	
+			value: function reduce_indentation(line, how_much) {
 				return line.substring(this.tab.symbol.length * how_much);
 			}
 		}, {
@@ -1102,7 +1100,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 					// check for messed up space indentation
 					if ((0, _helpers.starts_with)(line.line, ' ')) {
-						throw new Error('Invalid indentation (some extra leading spaces) at line ' + line.index + ': "' + line.original_line + '"');
+						throw new Error('Invalid indentation (extra leading spaces) at line ' + line.index + ': "' + line.original_line + '"');
+					}
+	
+					if ((0, _helpers.starts_with)(line.line, '\t')) {
+						throw new Error('Invalid indentation (mixed tabs and spaces) at line ' + line.index + ': "' + line.original_line + '"');
 					}
 				});
 	
@@ -1111,6 +1113,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					return Math.min(minimum, line.tabs);
 				}, Infinity);
 	
+				/* istanbul ignore else: do nothing on else */
 				// if there is initial tabulation missing - add it
 				if (minimum_indentation === 0) {
 					lines.forEach(function (line) {
@@ -1144,6 +1147,18 @@ return /******/ (function(modules) { // webpackBootstrap
 			return pair[0] - pair[1];
 		};
 	
+		function is_tabulated(line) {
+			// if we're using tabs for tabulation
+			if ((0, _helpers.starts_with)(line, '\t')) {
+				var _tab = {
+					symbol: '\t',
+					regexp: new RegExp('^(\t)+', 'g')
+				};
+	
+				return _tab;
+			}
+		}
+	
 		function calculate_leading_spaces(line) {
 			var counter = 0;
 			line.replace(/^( )+/g, function (match) {
@@ -1158,17 +1173,23 @@ return /******/ (function(modules) { // webpackBootstrap
 		});
 	
 		// has to be at least two of them
-		if (lines.length < 2) {
+		if (lines.length === 0) {
 			throw new Error('Couldn\'t decide on tabulation type. Not enough lines.');
 		}
 	
-		// if we're using tabs for tabulation
-		if ((0, _helpers.starts_with)(lines[1], '\t')) {
-			var tab = {
-				symbol: '\t',
-				regexp: new RegExp('^(\t)+', 'g')
-			};
+		/* istanbul ignore next: not a probable case in styles scenario */
+		if (lines.length === 1) {
+			var _tab2 = is_tabulated(lines[0]);
+			if (_tab2) {
+				return _tab2;
+			}
 	
+			return calculate_leading_spaces(lines[0]);
+		}
+	
+		// if we're using tabs for tabulation
+		var tab = is_tabulated(lines[1]);
+		if (tab) {
 			return tab;
 		}
 	
@@ -1178,7 +1199,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		var tab_width = Math.abs(substract(lines.slice(0, 2).map(calculate_leading_spaces)));
 	
 		if (tab_width === 0) {
-			throw new Error('Couldn\'t decide on tabulation type. Invalid tabulation.');
+			throw new Error('Couldn\'t decide on tabulation type. Same indentation.');
 		}
 	
 		var symbol = (0, _helpers.repeat)(' ', tab_width);
