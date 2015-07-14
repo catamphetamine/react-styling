@@ -79,6 +79,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		// restore the whole string from "strings" and "values" parts
 		var i = 0;
+		/* istanbul ignore next */
 		while (i < strings.length) {
 			style += strings[i];
 	

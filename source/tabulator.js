@@ -9,7 +9,7 @@ export default class Tabulator
 	}
 
 	// remove some tabs in the beginning
-	reduce_indentation(line, how_much = 1)
+	reduce_indentation(line, how_much)
 	{
 		return line.substring(this.tab.symbol.length * how_much)
 	}
@@ -48,7 +48,12 @@ export default class Tabulator
 			// check for messed up space indentation
 			if (starts_with(line.line, ' '))
 			{
-				throw new Error(`Invalid indentation (some extra leading spaces) at line ${line.index}: "${line.original_line}"`)
+				throw new Error(`Invalid indentation (extra leading spaces) at line ${line.index}: "${line.original_line}"`)
+			}
+
+			if (starts_with(line.line, '\t'))
+			{
+				throw new Error(`Invalid indentation (mixed tabs and spaces) at line ${line.index}: "${line.original_line}"`)
 			}
 		})
 
@@ -56,6 +61,7 @@ export default class Tabulator
 		const minimum_indentation = lines
 			.reduce((minimum, line) => Math.min(minimum, line.tabs), Infinity)
 
+		/* istanbul ignore else: do nothing on else */
 		// if there is initial tabulation missing - add it
 		if (minimum_indentation === 0)
 		{
@@ -88,6 +94,21 @@ Tabulator.determine_tabulation = function(lines)
 {
 	const substract = pair => pair[0] - pair[1]
 
+	function is_tabulated(line)
+	{
+		// if we're using tabs for tabulation
+		if (starts_with(line, '\t'))
+		{
+			const tab = 
+			{
+				symbol: '\t',
+				regexp: new RegExp(`^(\t)+`, 'g')
+			}
+
+			return tab
+		}
+	}
+
 	function calculate_leading_spaces(line)
 	{
 		let counter = 0
@@ -99,20 +120,27 @@ Tabulator.determine_tabulation = function(lines)
 	lines = lines.filter(line => !is_blank(line))
 
 	// has to be at least two of them
-	if (lines.length < 2)
+	if (lines.length === 0)
 	{
 		throw new Error(`Couldn't decide on tabulation type. Not enough lines.`)
 	}
 
-	// if we're using tabs for tabulation
-	if (starts_with(lines[1], '\t'))
+	/* istanbul ignore next: not a probable case in styles scenario */
+	if (lines.length === 1)
 	{
-		const tab = 
+		const tab = is_tabulated(lines[0])
+		if (tab)
 		{
-			symbol: '\t',
-			regexp: new RegExp(`^(\t)+`, 'g')
+			return tab
 		}
 
+		return calculate_leading_spaces(lines[0])
+	}
+
+	// if we're using tabs for tabulation
+	const tab = is_tabulated(lines[1])
+	if (tab)
+	{
 		return tab
 	}
 
@@ -127,7 +155,7 @@ Tabulator.determine_tabulation = function(lines)
 
 	if (tab_width === 0)
 	{
-		throw new Error(`Couldn't decide on tabulation type. Invalid tabulation.`)
+		throw new Error(`Couldn't decide on tabulation type. Same indentation.`)
 	}
 
 	const symbol = repeat(' ', tab_width)

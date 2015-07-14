@@ -46,6 +46,7 @@ export function zip(a, b)
 }
 
 // extends the first object with 
+/* istanbul ignore next: some weird transpiled code, not testable */
 export function extend(to, from, or_more)
 {
 	const parameters = Array.prototype.slice.call(arguments, 0)
