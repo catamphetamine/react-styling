@@ -100,45 +100,45 @@ const style = styler
           color            : #ffffff
           background-color : #000000
 
-        /*
-        multi
-        line
-        comment
-        */
+  /*
+  multi
+  line
+  comment
+  */
 
-        .old-school-regular-css-syntax {
-          box-sizing: border-box;
-          color: black;
-        }
+  .old-school-regular-css-syntax {
+    box-sizing: border-box;
+    color: black;
+  }
 
-        .scss_less {
-          color: white;
+  .scss_less {
+    color: white;
 
-          &:hover {
-            text-decoration: underline;
-          }
-        }
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 
-        curly_braces_fan {
-          background: none
+  curly_braces_fan {
+    background: none
 
-          curly_braces_fan_number_two {
-            background: transparent
-          }
-        }
+    curly_braces_fan_number_two {
+      background: transparent
+    }
+  }
 
-        YAML_fan:
-          display: inline-block
+  YAML_fan:
+    display: inline-block
 
-          python:
-            length: 99999px
+    python:
+      length: 99999px
 
-        // for Radium users
-        @media (min-width: 320px)
-          width: 100%
+  // for Radium users
+  @media (min-width: 320px)
+    width: 100%
 
-          :hover 
-            background: white
+    :hover 
+      background: white
 `
 ```
 
