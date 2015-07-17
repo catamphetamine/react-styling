@@ -232,12 +232,10 @@ Modifiers, when populated with the parent's styles, will also be populated with 
 
 There's a (popular) thing called [Radium](https://github.com/FormidableLabs/radium), which allows you to (citation):
 
-  * Conceptually simple extension of normal inline styles
   * Browser state styles to support :hover, :focus, and :active
   * Media queries
   * Automatic vendor prefixing
   * Keyframes animation helper
-  * ES6 class and createClass support
 
 You can use react-styling with this Radium library too: write you styles in text, then transform the text using react-styling into a JSON object, and then use that JSON object with Radium. If you opt in to use the "modifiers" feature of this module then you won't have to write `style={[style.a, style.a.b]}`, you can just write `style={style.a.b}`.
 
