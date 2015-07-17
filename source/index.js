@@ -61,9 +61,6 @@ function parse_node_json(styles, children_lines)
 		// support old CSS syntax
 		value = value.replace(/;$/, '').trim()
 
-		// strip quotes from value
-		value = value.replace(/^'(.*)'$/, '$1').replace(/^"(.*)"$/, '$1')
-
 		// check if the value can be parsed into an integer
 		if (String(parseInt(value)) === value)
 		{

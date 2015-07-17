@@ -508,55 +508,6 @@ menu
 		style.should.deep.equal(object)
 	})
 
-	it('should support quotes in style values', function()
-	{
-		const style = styler`
-			.old-school-regular-css-syntax {
-				box-sizing: 'border-box';
-
-				&.modifier {
-					border-width: "1px"
-				}
-			}
-
-			.blah {
-				border: 'none'
-				color: "white";
-
-				.nested {
-					color: 'black';
-				}
-			}
-		`
-
-		const object =
-		{
-			'old-school-regular-css-syntax':
-			{
-				boxSizing: 'border-box',
-
-				modifier:
-				{
-					boxSizing: 'border-box',
-					borderWidth: '1px'
-				}
-			},
-
-			blah:
-			{
-				border: 'none',
-				color: 'white',
-
-				nested:
-				{
-					color: 'black'
-				}
-			}
-		}
-
-		style.should.deep.equal(object)
-	})
-
 	it('should preserve pseudo-classes and media queries in modifiers', function()
 	{
 		const style = styler

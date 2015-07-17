@@ -34,18 +34,6 @@ But still it was a bit of a hassle: you have your muscular memory of writing CSS
 
 So I wrote this little module. All it does is it takes your CSS-alike text and transforms it to a valid JSON style object for your React components. It's simple and tiny. The syntax is clear and uncluttered. The module itself is unobtrusive and unopinionated (if you think it is go create an issue or a pull request).
 
-There is also this [Radium](https://github.com/FormidableLabs/radium) thing on the internets.
-It allows you to (citation):
-
-  * Conceptually simple extension of normal inline styles
-  * Browser state styles to support :hover, :focus, and :active
-  * Media queries
-  * Automatic vendor prefixing
-  * Keyframes animation helper
-  * ES6 class and createClass support
-
-And you can use this module with this [Radium](https://github.com/FormidableLabs/radium) thing too: write you styles in text, then transform the text using react-styling into a JSON object, and then use that JSON object with [Radium](https://github.com/FormidableLabs/radium), and it will work. If you opt in to use the "modifiers" feature of this module then you won't have to write `style={[style.a, style.a.b]}`, you can just write `style={style.a.b}`.
-
 ## Installation
 
 ```bash
@@ -109,11 +97,6 @@ const style = styler
   .old-school-regular-css-syntax {
     box-sizing: border-box;
     color: black;
-  }
-
-  .quotes-are-supported-too {
-    box-sizing: 'border-box';
-    color: "black";
   }
 
   .scss_less {
@@ -184,12 +167,6 @@ The example is self-explanatory. The CSS text in the example above will be trans
     color: 'black'
   },
 
-  'quotes-are-supported-too':
-  {
-    boxSizing: 'border-box',
-    color: 'black'
-  },
-
   scss_less:
   {
     color: 'white',
@@ -249,7 +226,70 @@ You can use both one-line comments and multiline comments.
 
 In the example above, notice the ampersand before the "current" style class - this feature is optional (you don't need to use it at all), and it means that this style class is a "modifier" and all the style from its parent style class will be included in this style class. In this example, the padding, color, display and text-decoration from the "link" style class will be included in the "current" style class, so it works just like LESS/SASS ampersand. If you opt in to using the "modifiers" feature then you won't need to do manual merging like `style="extend({}, style.menu.item.link, style.menu.item.link.current)"`.
 
-Modifiers, when populated with the parent's styles, will also be populated with all the parent's pseudo-classes (those ones starting with a colon) and media queries (those ones starting with an at). This is done for better and seamless integration with [Radium](https://github.com/FormidableLabs/radium). [Featured in Radium FAQ](https://github.com/FormidableLabs/radium/blob/master/docs/faq/README.md) by the way.
+Modifiers, when populated with the parent's styles, will also be populated with all the parent's pseudo-classes (those ones starting with a colon) and media queries (those ones starting with an at). This is done for better and seamless integration with [Radium](https://github.com/halt-hammerzeit/react-styling#radium).
+
+### Radium
+
+There's a (popular) thing called [Radium](https://github.com/FormidableLabs/radium), which allows you to (citation):
+
+  * Conceptually simple extension of normal inline styles
+  * Browser state styles to support :hover, :focus, and :active
+  * Media queries
+  * Automatic vendor prefixing
+  * Keyframes animation helper
+  * ES6 class and createClass support
+
+You can use react-styling with this Radium library too: write you styles in text, then transform the text using react-styling into a JSON object, and then use that JSON object with Radium. If you opt in to use the "modifiers" feature of this module then you won't have to write `style={[style.a, style.a.b]}`, you can just write `style={style.a.b}`.
+
+Here is the [DroidList example](https://github.com/FormidableLabs/radium/tree/master/docs/faq#how-do-i-use-pseudo-selectors-like-checked-or-last) from Radium FAQ rewritten using react-styling. Because `first` and `last` are "modifiers" here the `:hover` pseudo-class will be present inside each of them as well.
+
+```as
+var droids = [
+  'R2-D2',
+  'C-3PO',
+  'Huyang',
+  'Droideka',
+  'Probe Droid'
+]
+
+@Radium
+class DroidList extends React.Component {
+  render() {
+    return (
+      <ul style={style.droids}>
+        {droids.map((droid, index, droids) =>
+          <li key={index} style={index === 0 ? style.droids.droid.first : index === (droids.length - 1) ? style.droids.droid.last : style.droids.droid}>
+            {droid}
+          </li>
+        )}
+      </ul>
+    )
+  }
+}
+
+const style = styler`
+  droids
+    padding : 0
+
+    droid
+      border-color : black
+      border-style : solid
+      border-width : 1px 1px 0 1px
+      cursor       : pointer
+      list-style   : none
+      padding      : 12px
+
+      :hover
+        background : #eee
+
+      &first
+        border-radius : 12px 12px 0 0
+
+      &last
+        border-radius : 0 0 12px 12px
+        border-width  : 1px
+`
+```
 
 ### What's next
 
