@@ -123,7 +123,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			var parts = style.split(':');
 	
 			var key = parts[0].trim();
-			var value = parts[1];
+			var value = parts[1].trim();
 	
 			// transform dashed key to camelCase key (it's required by React)
 			key = key.replace(/([-]{1}[a-z]{1})/g, function (character) {
@@ -132,6 +132,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 			// support old CSS syntax
 			value = value.replace(/;$/, '').trim();
+	
+			// strip quotes from value
+			value = value.replace(/^'(.*)'$/, '$1').replace(/^"(.*)"$/, '$1');
 	
 			// check if the value can be parsed into an integer
 			if (String(parseInt(value)) === value) {
