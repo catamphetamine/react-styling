@@ -111,6 +111,11 @@ const style = styler
     color: black;
   }
 
+  .quotes-are-supported-too {
+    box-sizing: 'border-box';
+    color: "black";
+  }
+
   .scss_less {
     color: white;
 
@@ -174,6 +179,12 @@ The example is self-explanatory. The CSS text in the example above will be trans
   },
 
   'old-school-regular-css-syntax':
+  {
+    boxSizing: 'border-box',
+    color: 'black'
+  },
+
+  'quotes-are-supported-too':
   {
     boxSizing: 'border-box',
     color: 'black'
