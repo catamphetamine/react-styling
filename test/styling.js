@@ -461,8 +461,7 @@ menu
 
 	it('should support old school CSS syntax', function()
 	{
-		const style = styler
-		`
+		const style = styler`
 			.old-school-regular-css-syntax {
 				box-sizing: border-box;
 
