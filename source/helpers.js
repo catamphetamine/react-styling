@@ -47,17 +47,16 @@ export function zip(a, b)
 
 // extends the first object with 
 /* istanbul ignore next: some weird transpiled code, not testable */
-export function extend(to, from, or_more)
+export function extend(...objects)
 {
-	const parameters = Array.prototype.slice.call(arguments, 0)
+	const to   = objects[0]
+	const from = objects[1]
 
-	if (exists(or_more))
+	if (objects.length > 2)
 	{
-		const last = parameters.pop()
-		const intermediary_result = extend.apply(this, parameters)
-		// pass undefined as the third argument because of either Babel.js bug, or some other bug
-		// (the third argument is supplied and is equal to the second argument which is weird)
-		return extend(intermediary_result, last, undefined)
+		const last = objects.pop()
+		const intermediary_result = extend.apply(this, objects)
+		return extend(intermediary_result, last)
 	}
 
 	for (let key of Object.keys(from))

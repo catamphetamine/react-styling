@@ -297,9 +297,38 @@ If you want a feature, go create an issue (before making a pull request). If it 
 
 Maybe I could also write a webpack loader to perform text-to-json conversion at compile time as opposed to run time. If anyone needs that at all.
 
-### Development
+### Contributing
 
-If you'd like to start working on this project you'll need to run your usual `npm install` and then everything should work: `npm test`
+After cloning this repo, ensure dependencies are installed by running:
+
+```sh
+npm install
+```
+
+This module is written in ES6 and uses [Babel](http://babeljs.io/) for ES5
+transpilation. Widely consumable JavaScript can be produced by running:
+
+```sh
+npm run build
+```
+
+Once `npm run build` has run, you may `import` or `require()` directly from
+node.
+
+After developing, the full test suite can be evaluated by running:
+
+```sh
+npm test
+```
+
+While actively developing, we recommend running
+
+```sh
+npm run watch
+```
+
+in a terminal. This will watch the file system and run tests automatically 
+whenever you save a js file.
 
 ## License
 

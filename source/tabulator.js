@@ -37,24 +37,28 @@ export default class Tabulator
 			})
 			// filter out blank lines
 			.filter(line => !is_blank(line.line))
-
+			
 		// calculate each line's indentation
 		lines.forEach(line => 
 		{
-			line.original_line = line.line
-			line.tabs = this.calculate_indentation(line.line)
-			line.line = this.reduce_indentation(line.line, line.tabs)
+			const tabs = this.calculate_indentation(line.line)
+			const pure_line = this.reduce_indentation(line.line, tabs)
 
 			// check for messed up space indentation
-			if (starts_with(line.line, ' '))
+			if (starts_with(pure_line, ' '))
 			{
-				throw new Error(`Invalid indentation (extra leading spaces) at line ${line.index}: "${line.original_line}"`)
+				throw new Error(`Invalid indentation (extra leading spaces) at line ${line.index}: "${line.line}"`)
 			}
 
-			if (starts_with(line.line, '\t'))
+			// check for tabs in spaced intentation
+			if (starts_with(pure_line, '\t'))
 			{
-				throw new Error(`Invalid indentation (mixed tabs and spaces) at line ${line.index}: "${line.original_line}"`)
+				throw new Error(`Invalid indentation (mixed tabs and spaces) at line ${line.index}: "${line.line}"`)
 			}
+
+			line.tabs          = tabs
+			line.original_line = line.line
+			line.line          = pure_line
 		})
 
 		// get the minimum indentation level

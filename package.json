@@ -21,6 +21,7 @@
     "mocha": "^2.2.5",
     "node-libs-browser": "^0.5.2",
     "npm-run-all": "^1.2.6",
+    "sane": "^1.1.3",
     "tapable": "^0.1.9",
     "uglify-js": "^2.4.23",
     "watchpack": "^0.2.8",
@@ -38,8 +39,9 @@
     "build-regular": "webpack --action=build --colors",
     "build-minified": "webpack --action=build-minified --colors",
     "build-modules": "babel ./source --out-dir ./build-modules",
-    "commit_new_build": "git commit --all --message=\"Update build\"",
-    "preversion": "npm-run-all test build build-modules commit_new_build"
+    "commit-new-build": "git commit --all --message=\"Update build\"",
+    "preversion": "npm-run-all test build build-modules commit-new-build",
+    "watch": "babel scripts/watch.js | node"
   },
   "repository": {
     "type": "git",
