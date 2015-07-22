@@ -50,10 +50,8 @@ function parse_node_json(styles, children_lines)
 	// transform this node's style lines from text to JSON properties and their values
 	const style_object = styles.map(function(style)
 	{
-		const parts = style.split(':')
-
-		let key   = parts[0].trim()
-		let value = parts[1].trim()
+		let key   = style.substring(0, style.indexOf(':')).trim()
+		let value = style.substring(style.indexOf(':') + ':'.length).trim()
 
 		// transform dashed key to camelCase key (it's required by React)
 		key = key.replace(/([-]{1}[a-z]{1})/g, character => character.substring(1).toUpperCase())
@@ -187,7 +185,7 @@ function filter_lines_for_parsing(lines)
 	lines.forEach(function(line)
 	{
 		// remove single line comments
-		line.line = line.line.replace(/\/\/.*/, '')
+		line.line = line.line.replace(/^\s*\/\/.*/, '')
 		// remove any trailing whitespace
 		line.line = line.line.trim()
 	})

@@ -362,7 +362,8 @@ menu
 				// this is called a "modifier" class 
 				// (see the explanation of this term below)
 				&one
-					display: inline-block // inline-block here
+					// inline-block here
+					display: inline-block
 
 					/* 
 					multi
@@ -370,9 +371,12 @@ menu
 					comment
 					*/
 					two
-						display         : block
-						text-decoration : none
-						color           : #000000
+						display          : block
+						text-decoration  : none
+						color            : #000000
+						// single line comments may only start from the beginning of the line
+						// so that urls in background-images and such won't get broken
+						background-image : url(http://xhamster.com/)
 		`
 
 		const object =
@@ -388,9 +392,10 @@ menu
 
 					two:
 					{
-						display        : 'block',
-						textDecoration : 'none',
-						color          : '#000000'
+						display         : 'block',
+						textDecoration  : 'none',
+						color           : '#000000',
+						backgroundImage : 'url(http://xhamster.com/)'
 					}
 				}
 			}

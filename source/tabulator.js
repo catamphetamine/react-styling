@@ -1,5 +1,10 @@
 import { starts_with, is_blank, repeat } from './helpers'
 
+function reveal_whitespace(text)
+{
+	return text.replace(/ /g, '[space]').replace(/\t/g, '[tab]')
+}
+
 // tabulation utilities
 export default class Tabulator
 {
@@ -37,7 +42,7 @@ export default class Tabulator
 			})
 			// filter out blank lines
 			.filter(line => !is_blank(line.line))
-			
+
 		// calculate each line's indentation
 		lines.forEach(line => 
 		{
@@ -47,13 +52,13 @@ export default class Tabulator
 			// check for messed up space indentation
 			if (starts_with(pure_line, ' '))
 			{
-				throw new Error(`Invalid indentation (extra leading spaces) at line ${line.index}: "${line.line}"`)
+				throw new Error(`Invalid indentation (extra leading spaces) at line ${line.index}: "${reveal_whitespace(line.line)}" -> "${reveal_whitespace(pure_line)}"`)
 			}
 
 			// check for tabs in spaced intentation
 			if (starts_with(pure_line, '\t'))
 			{
-				throw new Error(`Invalid indentation (mixed tabs and spaces) at line ${line.index}: "${line.line}"`)
+				throw new Error(`Invalid indentation (mixed tabs and spaces) at line ${line.index}: "${reveal_whitespace(line.line)}"`)
 			}
 
 			line.tabs          = tabs
