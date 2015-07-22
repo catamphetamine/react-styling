@@ -120,10 +120,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	function parse_node_json(styles, children_lines) {
 		// transform this node's style lines from text to JSON properties and their values
 		var style_object = styles.map(function (style) {
-			var parts = style.split(':');
-	
-			var key = parts[0].trim();
-			var value = parts[1].trim();
+			var key = style.substring(0, style.indexOf(':')).trim();
+			var value = style.substring(style.indexOf(':') + ':'.length).trim();
 	
 			// transform dashed key to camelCase key (it's required by React)
 			key = key.replace(/([-]{1}[a-z]{1})/g, function (character) {
@@ -249,7 +247,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		lines.forEach(function (line) {
 			// remove single line comments
-			line.line = line.line.replace(/\/\/.*/, '');
+			line.line = line.line.replace(/^\s*\/\/.*/, '');
 			// remove any trailing whitespace
 			line.line = line.line.trim();
 		});
@@ -672,28 +670,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	// extends the first object with
 	/* istanbul ignore next: some weird transpiled code, not testable */
 	
-	function extend(_x, _x2, _x3) {
+	function extend() {
 		var _this = this,
 		    _arguments = arguments;
 	
 		var _again = true;
 	
 		_function: while (_again) {
-			var to = _x,
-			    from = _x2,
-			    or_more = _x3;
-			parameters = last = intermediary_result = _iteratorNormalCompletion = _didIteratorError = _iteratorError = undefined;
+			_len = objects = _key = to = from = last = intermediary_result = _iteratorNormalCompletion = _didIteratorError = _iteratorError = undefined;
 			_again = false;
 	
-			var parameters = Array.prototype.slice.call(_arguments, 0);
+			for (var _len = _arguments.length, objects = Array(_len), _key = 0; _key < _len; _key++) {
+				objects[_key] = _arguments[_key];
+			}
 	
-			if (exists(or_more)) {
-				var last = parameters.pop();
-				var intermediary_result = extend.apply(_this, parameters);
-				// pass undefined as the third argument because of either Babel.js bug, or some other bug
-				// (the third argument is supplied and is equal to the second argument which is weird)
+			var to = objects[0];
+			var from = objects[1];
+	
+			if (objects.length > 2) {
+				var last = objects.pop();
+				var intermediary_result = extend.apply(_this, objects);
 				_this = undefined;
-				_arguments = [_x = intermediary_result, _x2 = last, _x3 = undefined];
+				_arguments = [intermediary_result, last];
 				_again = true;
 				continue _function;
 			}
@@ -1073,6 +1071,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _helpers = __webpack_require__(9);
 	
+	function reveal_whitespace(text) {
+		return text.replace(/ /g, '[space]').replace(/\t/g, '[tab]');
+	}
+	
 	// tabulation utilities
 	
 	var Tabulator = (function () {
@@ -1119,18 +1121,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 				// calculate each line's indentation
 				lines.forEach(function (line) {
-					line.original_line = line.line;
-					line.tabs = _this.calculate_indentation(line.line);
-					line.line = _this.reduce_indentation(line.line, line.tabs);
+					var tabs = _this.calculate_indentation(line.line);
+					var pure_line = _this.reduce_indentation(line.line, tabs);
 	
 					// check for messed up space indentation
-					if ((0, _helpers.starts_with)(line.line, ' ')) {
-						throw new Error('Invalid indentation (extra leading spaces) at line ' + line.index + ': "' + line.original_line + '"');
+					if ((0, _helpers.starts_with)(pure_line, ' ')) {
+						throw new Error('Invalid indentation (extra leading spaces) at line ' + line.index + ': "' + reveal_whitespace(line.line) + '" -> "' + reveal_whitespace(pure_line) + '"');
 					}
 	
-					if ((0, _helpers.starts_with)(line.line, '\t')) {
-						throw new Error('Invalid indentation (mixed tabs and spaces) at line ' + line.index + ': "' + line.original_line + '"');
+					// check for tabs in spaced intentation
+					if ((0, _helpers.starts_with)(pure_line, '\t')) {
+						throw new Error('Invalid indentation (mixed tabs and spaces) at line ' + line.index + ': "' + reveal_whitespace(line.line) + '"');
 					}
+	
+					line.tabs = tabs;
+					line.original_line = line.line;
+					line.line = pure_line;
 				});
 	
 				// get the minimum indentation level
