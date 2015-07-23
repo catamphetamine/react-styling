@@ -1,10 +1,5 @@
 import { starts_with, is_blank, repeat } from './helpers'
 
-function reveal_whitespace(text)
-{
-	return text.replace(/ /g, '[space]').replace(/\t/g, '[tab]')
-}
-
 // tabulation utilities
 export default class Tabulator
 {
@@ -52,13 +47,33 @@ export default class Tabulator
 			// check for messed up space indentation
 			if (starts_with(pure_line, ' '))
 			{
-				throw new Error(`Invalid indentation (extra leading spaces) at line ${line.index}: "${reveal_whitespace(line.line)}" -> "${reveal_whitespace(pure_line)}"`)
+				let reason
+				if (this.tab.symbol === '\t')
+				{
+					reason = 'mixed tabs and spaces'
+				}
+				else
+				{
+					reason = 'extra leading spaces'
+				}
+
+				throw new Error(`Invalid indentation (${reason}) at line ${line.index}: "${this.reveal_whitespace(line.line)}"`)
 			}
 
 			// check for tabs in spaced intentation
 			if (starts_with(pure_line, '\t'))
 			{
-				throw new Error(`Invalid indentation (mixed tabs and spaces) at line ${line.index}: "${reveal_whitespace(line.line)}"`)
+				let reason
+				if (this.tab.symbol === '\t')
+				{
+					reason = 'extra leading tabs'
+				}
+				else
+				{
+					reason = 'mixed tabs and spaces'
+				}
+
+				throw new Error(`Invalid indentation (${reason}) at line ${line.index}: "${this.reveal_whitespace(line.line)}"`)
 			}
 
 			line.tabs          = tabs
@@ -96,6 +111,20 @@ export default class Tabulator
 
 		return lines
 	}
+
+	reveal_whitespace(text)
+	{
+		const whitespace_count = text.length - text.replace(/^\s*/, '').length
+
+		const whitespace = text.substring(0, whitespace_count + 1)
+			.replace(this.tab.regexp_anywhere, '[indent]')
+			.replace(/ /g, '[space]')
+			.replace(/\t/g, '[tab]')
+
+		const rest = text.substring(whitespace_count + 1)
+
+		return whitespace + rest
+	}
 }
 
 // decide whether it's tabs or spaces
@@ -111,7 +140,8 @@ Tabulator.determine_tabulation = function(lines)
 			const tab = 
 			{
 				symbol: '\t',
-				regexp: new RegExp(`^(\t)+`, 'g')
+				regexp: new RegExp('^(\t)+', 'g'),
+				regexp_anywhere: new RegExp('(\t)+', 'g')
 			}
 
 			return tab
@@ -172,7 +202,8 @@ Tabulator.determine_tabulation = function(lines)
 	const spaced_tab = 
 	{
 		symbol: symbol,
-		regexp: new RegExp(`^(${symbol})+`, 'g')
+		regexp: new RegExp(`^(${symbol})+`, 'g'),
+		regexp_anywhere: new RegExp(`(${symbol})+`, 'g')
 	}
 
 	return spaced_tab

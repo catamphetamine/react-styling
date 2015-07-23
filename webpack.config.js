@@ -26,7 +26,8 @@ if (!action)
 var Root_folder = path.resolve(__dirname)
 var Demo_folder = 'demo'
 
-var babel = 'babel?optional[]=runtime&stage=0'
+var babel_es6 = 'babel?optional[]=runtime&stage=0'
+var babel_legacy = 'babel'
 
 var config = 
 {
@@ -99,7 +100,7 @@ var merge_build = merge.bind(null,
 		[
 			{
 				test: /\.jsx?$/,
-				loaders: [babel],
+				loaders: [babel_legacy],
 				include: config.paths.src
 			}
 		]
@@ -157,7 +158,7 @@ switch (action)
 				[
 					{
 						test: /\.jsx?$/,
-						loaders: ['react-hot', babel],
+						loaders: ['react-hot', babel_legacy],
 						include: [config.paths.demo, config.paths.src]
 					}
 				]
@@ -211,7 +212,7 @@ switch (action)
 				[
 					{
 						test: /\.jsx?$/,
-						loaders: [babel],
+						loaders: [babel_legacy],
 						include: [config.paths.demo, config.paths.src]
 					}
 				]
