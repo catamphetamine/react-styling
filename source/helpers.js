@@ -59,7 +59,8 @@ export function extend(...objects)
 		return extend(intermediary_result, last)
 	}
 
-	for (let key of Object.keys(from))
+	// for loop requires Symbol (which requires Babel Polyfill)
+	Object.keys(from).forEach(function(key)
 	{
 		if (typeof from[key] === 'object' && exists(to[key]))
 		{
@@ -69,7 +70,7 @@ export function extend(...objects)
 		{
 			to[key] = from[key]
 		}
-	}
+	})
 
 	return to
 }
