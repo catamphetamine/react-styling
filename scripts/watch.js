@@ -15,6 +15,7 @@ process.env.PATH += ':./node_modules/.bin';
 
 const is_windows = process.platform === 'win32'
 
+// still creates the NUL file in the current working directory
 const dev_null = is_windows ? 'NUL' : '/dev/null'
 
 var cmd = resolvePath(__dirname);

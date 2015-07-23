@@ -33,6 +33,7 @@ export default class Tabulator
 			// preserve line indexes
 			.map((line, index) =>
 			{
+				index++
 				return { line, index }
 			})
 			// filter out blank lines
@@ -63,17 +64,7 @@ export default class Tabulator
 			// check for tabs in spaced intentation
 			if (starts_with(pure_line, '\t'))
 			{
-				let reason
-				if (this.tab.symbol === '\t')
-				{
-					reason = 'extra leading tabs'
-				}
-				else
-				{
-					reason = 'mixed tabs and spaces'
-				}
-
-				throw new Error(`Invalid indentation (${reason}) at line ${line.index}: "${this.reveal_whitespace(line.line)}"`)
+				throw new Error(`Invalid indentation (mixed tabs and spaces) at line ${line.index}: "${this.reveal_whitespace(line.line)}"`)
 			}
 
 			line.tabs          = tabs

@@ -30,11 +30,11 @@ describe('tabulator', function()
                      background-color : #000000
       `
 
-      const test = () => styler(style)
+		const test = () => styler(style)
 		test.should.throw('Invalid indentation (extra leading spaces)')
 	})
 
-	it('should fail on mixed tabs and spaces', function()
+	it('should fail on tabs used when indenting with spaces', function()
 	{
 		const style = 
 		`
@@ -60,10 +60,34 @@ describe('tabulator', function()
       `
 
 		const test = () => styler(style)
-      test.should.throw('Invalid indentation (mixed tabs and spaces)')
+		test.should.throw('mixed tabs and spaces')
 	})
 
-	it('should fail on messed up tabulation', function()
+	it('should fail on spaces used when indenting with tabs', function()
+	{
+		const style = 
+		`
+			menu
+			 	list-style-type: none
+		`
+
+		const test = () => styler(style)
+		test.should.throw('mixed tabs and spaces')
+	})
+
+	it('should fail on exccessive tabbing', function()
+	{
+		const style = 
+		`
+			menu
+					list-style-type: none
+		`
+
+		const test = () => styler(style)
+		test.should.throw('Excessive indentation')
+	})
+
+	it('should fail on messed up indentation levels', function()
 	{
 		const style = 
 		`
@@ -89,7 +113,7 @@ describe('tabulator', function()
       `
 
 		const test = () => styler(style)
-      test.should.throw('Invalid indentation at line')
+		test.should.throw('Invalid indentation at line')
 	})
 
 	it('should fail on blank styles', function()
@@ -102,7 +126,7 @@ describe('tabulator', function()
       `
 
 		const test = () => styler(style)
-      test.should.throw('Not enough lines')
+		test.should.throw('Not enough lines')
 	})
 
 	it('should fail on same indentation of the only two lines', function()
@@ -111,9 +135,9 @@ describe('tabulator', function()
 		`
     test 1
     test 2
-      `
+		`
 
 		const test = () => styler(style)
-      test.should.throw('Same indentation')
+		test.should.throw('Same indentation')
 	})
 })

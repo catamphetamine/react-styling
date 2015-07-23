@@ -2,7 +2,7 @@
   "name": "react-styling",
   "version": "1.2.5",
   "description": "Transforms CSS-alike text into a React style JSON object",
-  "main": "build-modules/index.js",
+  "main": "source/index.js",
   "dependencies": {},
   "devDependencies": {
     "async": "^1.3.0",
@@ -38,9 +38,9 @@
     "build": "npm-run-all build-regular build-minified",
     "build-regular": "webpack --action=build --colors",
     "build-minified": "webpack --action=build-minified --colors",
-    "build-modules": "babel ./source --out-dir ./build-modules",
+    "babel-transpiled-modules": "babel ./source --out-dir ./babel-transpiled-modules --source-maps inline",
     "commit-new-build": "git commit --all --message=\"Update build\"",
-    "preversion": "npm-run-all test build build-modules commit-new-build",
+    "preversion": "npm-run-all test build babel-transpiled-modules commit-new-build",
     "watch": "babel scripts/watch.js | node"
   },
   "repository": {

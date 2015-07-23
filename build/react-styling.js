@@ -215,6 +215,14 @@ return /******/ (function(modules) { // webpackBootstrap
 				return line.tabs--;
 			});
 	
+			// check for excessive indentation of children
+			if (children_lines.length > 0) {
+				var line = children_lines[0];
+				if (line.tabs !== 1) {
+					throw new Error('Excessive indentation at line ' + line.index + ': "' + line.original_line + '"');
+				}
+			}
+	
 			// using this child node's style lines
 			// and this child node's child nodes' lines,
 			// generate this child node's style JSON object
@@ -519,6 +527,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				lines = lines
 				// preserve line indexes
 				.map(function (line, index) {
+					index++;
 					return { line: line, index: index };
 				})
 				// filter out blank lines
@@ -545,14 +554,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 					// check for tabs in spaced intentation
 					if ((0, _helpers.starts_with)(pure_line, '\t')) {
-						var reason = undefined;
-						if (_this.tab.symbol === '\t') {
-							reason = 'extra leading tabs';
-						} else {
-							reason = 'mixed tabs and spaces';
-						}
-	
-						throw new Error('Invalid indentation (' + reason + ') at line ' + line.index + ': "' + _this.reveal_whitespace(line.line) + '"');
+						throw new Error('Invalid indentation (mixed tabs and spaces) at line ' + line.index + ': "' + _this.reveal_whitespace(line.line) + '"');
 					}
 	
 					line.tabs = tabs;

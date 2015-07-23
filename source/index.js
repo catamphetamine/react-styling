@@ -152,6 +152,16 @@ function parse_children(lines)
 		// reduce tabulation for this child node's child nodes' lines
 		children_lines.forEach(line => line.tabs--)
 
+		// check for excessive indentation of children
+		if (children_lines.length > 0)
+		{
+			const line = children_lines[0]
+			if (line.tabs !== 1)
+			{
+				throw new Error(`Excessive indentation at line ${line.index}: "${line.original_line}"`)
+			}
+		}
+
 		// using this child node's style lines 
 		// and this child node's child nodes' lines,
 		// generate this child node's style JSON object

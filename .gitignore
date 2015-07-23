@@ -1,15 +1,15 @@
 # test coverage folder
-coverage
+/coverage/
 
 # npm modules
 # https://docs.npmjs.com/misc/faq#should-i-check-my-node-modules-folder-into-git
-node_modules
+/node_modules/
 
 # npm errors
 npm-debug.log
 
 # github pages
-gh-pages/
+/gh-pages/
 
 # for OS X users
 .DS_Store
@@ -23,7 +23,7 @@ gh-pages/
 *.sublime-workspace
 
 # webpack build target folder
-build-modules/
+/babel-transpiled-modules/
 
 # NUL
 NUL
