@@ -38,7 +38,7 @@
     "build": "npm-run-all build-regular build-minified",
     "build-regular": "webpack --action=build --colors",
     "build-minified": "webpack --action=build-minified --colors",
-    "babel-transpiled-modules": "babel ./source --out-dir ./babel-transpiled-modules --source-maps inline",
+    "babel-transpiled-modules": "babel ./source --optional runtime --out-dir ./babel-transpiled-modules --source-maps inline",
     "commit-new-build": "git commit --all --message=\"Update build\"",
     "preversion": "npm-run-all test build babel-transpiled-modules commit-new-build",
     "watch": "babel scripts/watch.js | node"
