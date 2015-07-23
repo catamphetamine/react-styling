@@ -422,7 +422,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		var _again = true;
 	
 		_function: while (_again) {
-			_len = objects = _key = to = from = last = intermediary_result = _iteratorNormalCompletion = _didIteratorError = _iteratorError = undefined;
+			_len = objects = _key = to = from = last = intermediary_result = undefined;
 			_again = false;
 	
 			for (var _len = _arguments.length, objects = Array(_len), _key = 0; _key < _len; _key++) {
@@ -441,34 +441,14 @@ return /******/ (function(modules) { // webpackBootstrap
 				continue _function;
 			}
 	
-			var _iteratorNormalCompletion = true;
-			var _didIteratorError = false;
-			var _iteratorError = undefined;
-	
-			try {
-				for (var _iterator = Object.keys(from)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-					var key = _step.value;
-	
-					if (typeof from[key] === 'object' && exists(to[key])) {
-						to[key] = extend(to[key], from[key]);
-					} else {
-						to[key] = from[key];
-					}
+			// for loop requires Symbol (which requires Babel Polyfill)
+			Object.keys(from).forEach(function (key) {
+				if (typeof from[key] === 'object' && exists(to[key])) {
+					to[key] = extend(to[key], from[key]);
+				} else {
+					to[key] = from[key];
 				}
-			} catch (err) {
-				_didIteratorError = true;
-				_iteratorError = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion && _iterator['return']) {
-						_iterator['return']();
-					}
-				} finally {
-					if (_didIteratorError) {
-						throw _iteratorError;
-					}
-				}
-			}
+			});
 	
 			return to;
 		}
