@@ -1,6 +1,6 @@
 {
   "name": "react-styling",
-  "version": "1.2.9",
+  "version": "1.2.10",
   "description": "Transforms CSS-alike text into a React style JSON object",
   "main": "babel-transpiled-modules/index.js",
   "dependencies": {

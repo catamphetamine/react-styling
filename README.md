@@ -289,10 +289,6 @@ const style = styler`
 `
 ```
 
-### ES6
-
-This module is written in ES6/ES7 syntax and therefore requires [Babel](https://babeljs.io/) transpilation to support all the web browsers (not only the modern ones). Using [Babel](https://babeljs.io/) for ES6/ES7 transpilation in web development workflow is a common practice nowadays so just in case you happen to never used it in your projects - start using it now. It works everywhere: command line, Webpack, Browserify, whatever. In case you don't want to use Babel in your workflow for whatever reason you can still grab an already transpiled and concatenated build from the `build` folder.
-
 ### What's next
 
 I can add the features you want (or you can do it). I can work on making errors more user friendly and helpful if anyone else uses this module.
