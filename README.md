@@ -30,7 +30,7 @@ And I was again like "ummm, I'm not sure... do we really need to write our style
 
 [React.js Conf 2015 Keynote 2 - A Deep Dive into React Native, 9:14](https://www.youtube.com/watch?v=7rDsRXj9-cU#t=554)
 
-And now, as you've already guessed, I'm writing my styles inline in my React components and I like it.
+And now, as you've already guessed, I'm writing my styles inline in my React components and I like it. As I see it, one should put generic styling (like body, h1, a, p, button, etc) into the main .css file and then put all the specific styles into the corresponding React components inline.
 
 But still it was a bit of a hassle: you have your muscular memory of writing CSS, and now you need to write it all in JSON format with all those quotes which are difficult to reach with your pinkie (oh, and you missed one there, and your IDE automatically inserted an erroneous couple there, and now your syntax highlighting is broken), and commas (oh, you missed that one too, go figure; gosh, they still have commas in JSON objects in ES6 in the XXI'st century), and that camelCase (I don't like "borderBottomRadius", I don't like camelCase at all).
 
