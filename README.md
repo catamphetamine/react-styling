@@ -9,6 +9,8 @@
 [![Gratipay][gratipay-image]][gratipay-url]
 -->
 
+Is a helper function to convert various CSS syntaxes into a React style JSON object
+
 ## Motivation
 
 At first when I heard about "that React thing" a couple of years earlier I opened their website,
