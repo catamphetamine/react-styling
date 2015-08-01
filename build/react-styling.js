@@ -11,41 +11,41 @@
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
-
+/******/
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
-
+/******/
 /******/ 		// Check if module is in cache
 /******/ 		if(installedModules[moduleId])
 /******/ 			return installedModules[moduleId].exports;
-
+/******/
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			exports: {},
 /******/ 			id: moduleId,
 /******/ 			loaded: false
 /******/ 		};
-
+/******/
 /******/ 		// Execute the module function
 /******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-
+/******/
 /******/ 		// Flag the module as loaded
 /******/ 		module.loaded = true;
-
+/******/
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-
-
+/******/
+/******/
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
-
+/******/
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
-
+/******/
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
-
+/******/
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
 /******/ })
@@ -55,92 +55,92 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	var _Object$keys = __webpack_require__(1)['default'];
-
+	
 	var _interopRequireDefault = __webpack_require__(8)['default'];
-
+	
 	Object.defineProperty(exports, '__esModule', {
 		value: true
 	});
 	exports['default'] = styler;
-
+	
 	var _helpers = __webpack_require__(9);
-
+	
 	var _tabulator = __webpack_require__(26);
-
+	
 	var _tabulator2 = _interopRequireDefault(_tabulator);
-
+	
 	// using ES6 template strings
 	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/template_strings
-
+	
 	function styler(strings) {
 		var style = '';
-
+	
 		// restore the whole string from "strings" and "values" parts
 		var i = 0;
 		while (i < strings.length) {
 			style += strings[i];
-
+	
 			for (var _len = arguments.length, values = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
 				values[_key - 1] = arguments[_key];
 			}
-
+	
 			if ((0, _helpers.exists)(values[i])) {
 				style += values[i];
 			}
 			i++;
 		}
-
+	
 		return parse_style_json_object(style);
 	}
-
+	
 	// converts text to JSON object
 	function parse_style_json_object(text) {
 		// remove multiline comments
 		text = text.replace(/\/\*([\s\S]*?)\*\//g, '');
-
+	
 		// ignore curly braces for now.
 		// maybe support curly braces along with tabulation in future
 		text = text.replace(/[\{\}]/g, '');
-
+	
 		var lines = text.split('\n');
-
+	
 		// helper class for dealing with tabulation
 		var tabulator = new _tabulator2['default'](_tabulator2['default'].determine_tabulation(lines));
-
+	
 		// parse text into JSON object
 		var style_json = parse_node_json([], tabulator.extract_tabulation(lines));
-
+	
 		// expand "modifier" style classes
 		return expand_modifier_style_classes(style_json);
 	}
-
+	
 	// parse child nodes' lines (and this node's styles) into this node's style JSON object
 	function parse_node_json(styles, children_lines) {
 		// transform this node's style lines from text to JSON properties and their values
 		var style_object = styles.map(function (style) {
 			var key = style.substring(0, style.indexOf(':')).trim();
 			var value = style.substring(style.indexOf(':') + ':'.length).trim();
-
+	
 			// transform dashed key to camelCase key (it's required by React)
 			key = key.replace(/([-]{1}[a-z]{1})/g, function (character) {
 				return character.substring(1).toUpperCase();
 			});
-
+	
 			// support old CSS syntax
 			value = value.replace(/;$/, '').trim();
-
+	
 			// check if the value can be parsed into an integer
 			if (String(parseInt(value)) === value) {
 				value = parseInt(value);
 			}
-
+	
 			// check if the value can be parsed into a float
 			if (String(parseFloat(value)) === value) {
 				value = parseFloat(value);
 			}
-
+	
 			return { key: key, value: value };
 		})
 		// combine the styles into a JSON object
@@ -148,40 +148,40 @@ return /******/ (function(modules) { // webpackBootstrap
 			styles[style.key] = style.value;
 			return styles;
 		}, {});
-
+	
 		// parse child nodes and add them to this node's JSON object
 		return (0, _helpers.extend)(style_object, parse_children(children_lines));
 	}
-
+	
 	// parses child nodes' lines of text into the corresponding child node JSON objects
 	function parse_children(lines) {
 		// preprocess the lines (filter out comments, blank lines, etc)
 		lines = filter_lines_for_parsing(lines);
-
+	
 		// return empty object if there are no lines to parse
 		if (lines.length === 0) {
 			return {};
 		}
-
+	
 		// parse each child node's lines
 		return split_lines_by_child_nodes(lines).map(function (lines) {
 			// the first line is this child node's name
 			var name = lines.shift().line;
-
+	
 			// is it a "modifier" style class
 			var is_a_modifier = false;
-
+	
 			// detect modifier style classes
 			if ((0, _helpers.starts_with)(name, '&')) {
 				name = name.substring('&'.length);
 				is_a_modifier = true;
 			}
-
+	
 			// support old-school CSS syntax
 			if ((0, _helpers.starts_with)(name, '.')) {
 				name = name.substring('.'.length);
 			}
-
+	
 			// if someone forgot a trailing colon in the style class name - trim it
 			// (or maybe these are Python people)
 			if ((0, _helpers.ends_with)(name, ':')) {
@@ -189,34 +189,34 @@ return /******/ (function(modules) { // webpackBootstrap
 				// throw new Error(`Remove the trailing colon at line: ${original_line}`)
 				;
 			}
-
+	
 			// this child node's styles
 			var styles = lines.filter(function (line) {
 				// styles always have indentation of 2
 				if (line.tabs !== 2) {
 					return false;
 				}
-
+	
 				// detect generic css style line (skip modifier classes and media queries)
 				var colon_index = line.line.indexOf(':');
 				return !(0, _helpers.starts_with)(line.line, '&') && !(0, _helpers.starts_with)(line.line, '@') && (colon_index > 0 && colon_index < line.line.length - 1);
 			});
-
+	
 			// the lines corresponding to this child node's child nodes and all their children, etc
 			var children_lines = lines.filter(function (line) {
 				return styles.indexOf(line) < 0;
 			});
-
+	
 			// convert style lines info to just text lines
 			styles = styles.map(function (line) {
 				return line.line;
 			});
-
+	
 			// reduce tabulation for this child node's child nodes' lines
 			children_lines.forEach(function (line) {
 				return line.tabs--;
 			});
-
+	
 			// check for excessive indentation of children
 			if (children_lines.length > 0) {
 				var line = children_lines[0];
@@ -224,18 +224,18 @@ return /******/ (function(modules) { // webpackBootstrap
 					throw new Error('Excessive indentation at line ' + line.index + ': "' + line.original_line + '"');
 				}
 			}
-
+	
 			// using this child node's style lines
 			// and this child node's child nodes' lines,
 			// generate this child node's style JSON object
 			// (this is gonna be a recursion)
 			var json = parse_node_json(styles, children_lines);
-
+	
 			// set the modifier flag if it's the case
 			if (is_a_modifier) {
 				json._is_a_modifier = true;
 			}
-
+	
 			// this child node's style JSON object is ready
 			return { name: name, json: json };
 		})
@@ -245,24 +245,24 @@ return /******/ (function(modules) { // webpackBootstrap
 			return nodes;
 		}, {});
 	}
-
+	
 	// filters out commets, blank lines, etc
 	function filter_lines_for_parsing(lines) {
 		// filter out blank lines
 		lines = lines.filter(function (line) {
 			return !(0, _helpers.is_blank)(line.line);
 		});
-
+	
 		lines.forEach(function (line) {
 			// remove single line comments
 			line.line = line.line.replace(/^\s*\/\/.*/, '');
 			// remove any trailing whitespace
 			line.line = line.line.trim();
 		});
-
+	
 		return lines;
 	}
-
+	
 	// takes the whole lines array and splits it by its top-tier child nodes
 	function split_lines_by_child_nodes(lines) {
 		// determine lines with indentation = 1 (child node entry lines)
@@ -273,28 +273,28 @@ return /******/ (function(modules) { // webpackBootstrap
 		}).map(function (line) {
 			return line.index;
 		});
-
+	
 		// deduce corresponding child node ending lines
 		var node_ending_lines = node_entry_lines.map(function (line_index) {
 			return line_index - 1;
 		});
 		node_ending_lines.shift();
 		node_ending_lines.push(lines.length - 1);
-
+	
 		// each child node boundaries in terms of starting line index and ending line index
 		var from_to = (0, _helpers.zip)(node_entry_lines, node_ending_lines);
-
+	
 		// now lines are split by child nodes
 		return from_to.map(function (from_to) {
 			return lines.slice(from_to[0], from_to[1] + 1);
 		});
 	}
-
+	
 	// expand modifier style classes
 	function expand_modifier_style_classes(node) {
 		var style = get_node_style(node);
 		var pseudo_classes = get_node_pseudo_classes(node);
-
+	
 		_Object$keys(node)
 		// get all modifier style class nodes
 		.filter(function (name) {
@@ -304,11 +304,11 @@ return /******/ (function(modules) { // webpackBootstrap
 		.forEach(function (name) {
 			// delete the modifier flags
 			delete node[name]._is_a_modifier;
-
+	
 			// include parent node's styles and pseudo-classes into the modifier style class node
 			node[name] = (0, _helpers.extend)({}, style, pseudo_classes, node[name]);
 		});
-
+	
 		_Object$keys(node)
 		// get all style class nodes
 		.filter(function (name) {
@@ -319,10 +319,10 @@ return /******/ (function(modules) { // webpackBootstrap
 			// recurse
 			expand_modifier_style_classes(node[name]);
 		});
-
+	
 		return node;
 	}
-
+	
 	// extracts root css styles of this style class node
 	function get_node_style(node) {
 		return _Object$keys(node)
@@ -336,7 +336,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			return style;
 		}, {});
 	}
-
+	
 	// extracts root pseudo-classes of this style class node
 	function get_node_pseudo_classes(node) {
 		return _Object$keys(node)
@@ -447,7 +447,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return $.setDesc(object, key, desc(bitmap, value));
 	  } : simpleSet;
 	}
-
+	
 	function isObject(it){
 	  return it !== null && (typeof it == 'object' || typeof it == 'function');
 	}
@@ -458,7 +458,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if(it == undefined)throw TypeError("Can't call method on  " + it);
 	  return it;
 	}
-
+	
 	var $ = module.exports = __webpack_require__(5)({
 	  g: global,
 	  core: core,
@@ -578,10 +578,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	var $ = __webpack_require__(4)
 	  , toString = {}.toString
 	  , getNames = $.getNames;
-
+	
 	var windowNames = typeof window == 'object' && Object.getOwnPropertyNames
 	  ? Object.getOwnPropertyNames(window) : [];
-
+	
 	function getWindowNames(it){
 	  try {
 	    return getNames(it);
@@ -589,7 +589,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return windowNames.slice();
 	  }
 	}
-
+	
 	module.exports.get = function getOwnPropertyNames(it){
 	  if(windowNames && toString.call(it) == '[object Window]')return getWindowNames(it);
 	  return getNames($.toObject(it));
@@ -600,13 +600,13 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	"use strict";
-
+	
 	exports["default"] = function (obj) {
 	  return obj && obj.__esModule ? obj : {
 	    "default": obj
 	  };
 	};
-
+	
 	exports.__esModule = true;
 
 /***/ },
@@ -615,11 +615,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	// if the variable is defined
 	'use strict';
-
+	
 	var _getIterator = __webpack_require__(10)['default'];
-
+	
 	var _Object$keys = __webpack_require__(1)['default'];
-
+	
 	Object.defineProperty(exports, '__esModule', {
 		value: true
 	});
@@ -632,16 +632,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	var exists = function exists(what) {
 		return typeof what !== 'undefined';
 	};
-
+	
 	exports.exists = exists;
 	// if the string starts with the substring
-
+	
 	function starts_with(string, what) {
 		return string.indexOf(what) === 0;
 	}
-
+	
 	// if the string ends with the substring
-
+	
 	function ends_with(string, what) {
 		var index = string.lastIndexOf(what);
 		if (index < 0) {
@@ -649,9 +649,9 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 		return index === string.length - what.length;
 	}
-
+	
 	// repeat string N times
-
+	
 	function repeat(what, times) {
 		var result = '';
 		while (times > 0) {
@@ -660,41 +660,41 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 		return result;
 	}
-
+	
 	// if the text is blank
-
+	
 	function is_blank(text) {
 		return !exists(text) || !text.replace(/\s/g, '');
 	}
-
+	
 	// zips two arrays
-
+	
 	function zip(a, b) {
 		return a.map(function (_, index) {
 			return [a[index], b[index]];
 		});
 	}
-
+	
 	// extends the first object with
 	/* istanbul ignore next: some weird transpiled code, not testable */
-
+	
 	function extend() {
 		var _this = this,
 		    _arguments = arguments;
-
+	
 		var _again = true;
-
+	
 		_function: while (_again) {
 			_len = objects = _key = to = from = last = intermediary_result = _iteratorNormalCompletion = _didIteratorError = _iteratorError = undefined;
 			_again = false;
-
+	
 			for (var _len = _arguments.length, objects = Array(_len), _key = 0; _key < _len; _key++) {
 				objects[_key] = _arguments[_key];
 			}
-
+	
 			var to = objects[0];
 			var from = objects[1];
-
+	
 			if (objects.length > 2) {
 				var last = objects.pop();
 				var intermediary_result = extend.apply(_this, objects);
@@ -703,15 +703,15 @@ return /******/ (function(modules) { // webpackBootstrap
 				_again = true;
 				continue _function;
 			}
-
+	
 			var _iteratorNormalCompletion = true;
 			var _didIteratorError = false;
 			var _iteratorError = undefined;
-
+	
 			try {
 				for (var _iterator = _getIterator(_Object$keys(from)), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 					var key = _step.value;
-
+	
 					if (typeof from[key] === 'object' && exists(to[key])) {
 						to[key] = extend(to[key], from[key]);
 					} else {
@@ -732,7 +732,7 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 				}
 			}
-
+	
 			return to;
 		}
 	}
@@ -781,7 +781,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  , $iter      = __webpack_require__(16)
 	  , step       = $iter.step
 	  , Iterators  = $iter.Iterators;
-
+	
 	// 22.1.3.4 Array.prototype.entries()
 	// 22.1.3.13 Array.prototype.keys()
 	// 22.1.3.29 Array.prototype.values()
@@ -802,10 +802,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  if(kind == 'values')return step(0, O[index]);
 	  return step(0, [index, O[index]]);
 	}, 'values');
-
+	
 	// argumentsList[@@iterator] is %ArrayProto_values% (9.4.4.6, 9.4.4.7)
 	Iterators.Arguments = Iterators.Array;
-
+	
 	setUnscope('keys');
 	setUnscope('values');
 	setUnscope('entries');
@@ -848,7 +848,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Add iterator for FF iterator protocol
 	  if(FF_ITERATOR in [])$.hide(O, FF_ITERATOR, value);
 	}
-
+	
 	module.exports = {
 	  // Safari has buggy iterators w/o `next`
 	  BUGGY: 'keys' in [] && !('next' in [].keys()),
@@ -1016,7 +1016,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  , ITER  = __webpack_require__(15).safe('iter')
 	  , $iter = __webpack_require__(16)
 	  , step  = $iter.step;
-
+	
 	// 21.1.3.27 String.prototype[@@iterator]()
 	__webpack_require__(21)(String, 'String', function(iterated){
 	  set(this, ITER, {o: String(iterated), i: 0});
@@ -1068,51 +1068,51 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	var _createClass = __webpack_require__(27)['default'];
-
+	
 	var _classCallCheck = __webpack_require__(30)['default'];
-
+	
 	Object.defineProperty(exports, '__esModule', {
 		value: true
 	});
-
+	
 	var _helpers = __webpack_require__(9);
-
+	
 	// tabulation utilities
-
+	
 	var Tabulator = (function () {
 		function Tabulator(tab) {
 			_classCallCheck(this, Tabulator);
-
+	
 			this.tab = tab;
 		}
-
+	
 		_createClass(Tabulator, [{
 			key: 'reduce_indentation',
-
+	
 			// remove some tabs in the beginning
 			value: function reduce_indentation(line, how_much) {
 				return line.substring(this.tab.symbol.length * how_much);
 			}
 		}, {
 			key: 'calculate_indentation',
-
+	
 			// how many "tabs" are there before content of this line
 			value: function calculate_indentation(line) {
 				var matches = line.match(this.tab.regexp);
-
+	
 				if (!matches) {
 					return 0;
 				}
-
+	
 				return matches[0].length / this.tab.symbol.length;
 			}
 		}, {
 			key: 'extract_tabulation',
 			value: function extract_tabulation(lines) {
 				var _this = this;
-
+	
 				lines = lines
 				// preserve line indexes
 				.map(function (line, index) {
@@ -1123,12 +1123,12 @@ return /******/ (function(modules) { // webpackBootstrap
 				.filter(function (line) {
 					return !(0, _helpers.is_blank)(line.line);
 				});
-
+	
 				// calculate each line's indentation
 				lines.forEach(function (line) {
 					var tabs = _this.calculate_indentation(line.line);
 					var pure_line = _this.reduce_indentation(line.line, tabs);
-
+	
 					// check for messed up space indentation
 					if ((0, _helpers.starts_with)(pure_line, ' ')) {
 						var reason = undefined;
@@ -1137,25 +1137,25 @@ return /******/ (function(modules) { // webpackBootstrap
 						} else {
 							reason = 'extra leading spaces';
 						}
-
+	
 						throw new Error('Invalid indentation (' + reason + ') at line ' + line.index + ': "' + _this.reveal_whitespace(line.line) + '"');
 					}
-
+	
 					// check for tabs in spaced intentation
 					if ((0, _helpers.starts_with)(pure_line, '\t')) {
 						throw new Error('Invalid indentation (mixed tabs and spaces) at line ' + line.index + ': "' + _this.reveal_whitespace(line.line) + '"');
 					}
-
+	
 					line.tabs = tabs;
 					line.original_line = line.line;
 					line.line = pure_line;
 				});
-
+	
 				// get the minimum indentation level
 				var minimum_indentation = lines.reduce(function (minimum, line) {
 					return Math.min(minimum, line.tabs);
 				}, Infinity);
-
+	
 				/* istanbul ignore else: do nothing on else */
 				// if there is initial tabulation missing - add it
 				if (minimum_indentation === 0) {
@@ -1169,38 +1169,38 @@ return /******/ (function(modules) { // webpackBootstrap
 						line.tabs -= minimum_indentation - 1;
 					});
 				}
-
+	
 				// check for messed up tabulation
 				if (lines[0].tabs !== 1) {
 					throw new Error('Invalid indentation at line ' + lines[0].index + ': "' + lines[0].original_line + '"');
 				}
-
+	
 				return lines;
 			}
 		}, {
 			key: 'reveal_whitespace',
 			value: function reveal_whitespace(text) {
 				var whitespace_count = text.length - text.replace(/^\s*/, '').length;
-
+	
 				var whitespace = text.substring(0, whitespace_count + 1).replace(this.tab.regexp_anywhere, '[indent]').replace(/ /g, '[space]').replace(/\t/g, '[tab]');
-
+	
 				var rest = text.substring(whitespace_count + 1);
-
+	
 				return whitespace + rest;
 			}
 		}]);
-
+	
 		return Tabulator;
 	})();
-
+	
 	exports['default'] = Tabulator;
-
+	
 	// decide whether it's tabs or spaces
 	Tabulator.determine_tabulation = function (lines) {
 		var substract = function substract(pair) {
 			return pair[0] - pair[1];
 		};
-
+	
 		function is_tabulated(line) {
 			// if we're using tabs for tabulation
 			if ((0, _helpers.starts_with)(line, '\t')) {
@@ -1209,11 +1209,11 @@ return /******/ (function(modules) { // webpackBootstrap
 					regexp: new RegExp('^(\t)+', 'g'),
 					regexp_anywhere: new RegExp('(\t)+', 'g')
 				};
-
+	
 				return _tab;
 			}
 		}
-
+	
 		function calculate_leading_spaces(line) {
 			var counter = 0;
 			line.replace(/^( )+/g, function (match) {
@@ -1221,50 +1221,50 @@ return /******/ (function(modules) { // webpackBootstrap
 			});
 			return counter;
 		}
-
+	
 		// take all meaningful lines
 		lines = lines.filter(function (line) {
 			return !(0, _helpers.is_blank)(line);
 		});
-
+	
 		// has to be at least two of them
 		if (lines.length === 0) {
 			throw new Error('Couldn\'t decide on tabulation type. Not enough lines.');
 		}
-
+	
 		/* istanbul ignore next: not a probable case in styles scenario */
 		if (lines.length === 1) {
 			var _tab2 = is_tabulated(lines[0]);
 			if (_tab2) {
 				return _tab2;
 			}
-
+	
 			return calculate_leading_spaces(lines[0]);
 		}
-
+	
 		// if we're using tabs for tabulation
 		var tab = is_tabulated(lines[1]);
 		if (tab) {
 			return tab;
 		}
-
+	
 		// take the first two lines,
 		// calculate their indentation,
 		// substract it and you've got the tab width
 		var tab_width = Math.abs(substract(lines.slice(0, 2).map(calculate_leading_spaces)));
-
+	
 		if (tab_width === 0) {
 			throw new Error('Couldn\'t decide on tabulation type. Same indentation.');
 		}
-
+	
 		var symbol = (0, _helpers.repeat)(' ', tab_width);
-
+	
 		var spaced_tab = {
 			symbol: symbol,
 			regexp: new RegExp('^(' + symbol + ')+', 'g'),
 			regexp_anywhere: new RegExp('(' + symbol + ')+', 'g')
 		};
-
+	
 		return spaced_tab;
 	};
 	module.exports = exports['default'];
@@ -1274,9 +1274,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-
+	
 	var _Object$defineProperty = __webpack_require__(28)["default"];
-
+	
 	exports["default"] = (function () {
 	  function defineProperties(target, props) {
 	    for (var i = 0; i < props.length; i++) {
@@ -1284,18 +1284,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	      descriptor.enumerable = descriptor.enumerable || false;
 	      descriptor.configurable = true;
 	      if ("value" in descriptor) descriptor.writable = true;
-
+	
 	      _Object$defineProperty(target, descriptor.key, descriptor);
 	    }
 	  }
-
+	
 	  return function (Constructor, protoProps, staticProps) {
 	    if (protoProps) defineProperties(Constructor.prototype, protoProps);
 	    if (staticProps) defineProperties(Constructor, staticProps);
 	    return Constructor;
 	  };
 	})();
-
+	
 	exports.__esModule = true;
 
 /***/ },
@@ -1318,13 +1318,13 @@ return /******/ (function(modules) { // webpackBootstrap
 /***/ function(module, exports) {
 
 	"use strict";
-
+	
 	exports["default"] = function (instance, Constructor) {
 	  if (!(instance instanceof Constructor)) {
 	    throw new TypeError("Cannot call a class as a function");
 	  }
 	};
-
+	
 	exports.__esModule = true;
 
 /***/ }
