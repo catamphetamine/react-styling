@@ -666,4 +666,59 @@ menu
 
 		style.should.deep.equal(object)
 	})
+
+	it('should fail on exccessive tabbing', function()
+	{
+		const style = 
+		`
+			menu
+					list-style-type: none
+		`
+
+		const test = () => styler(style)
+		test.should.throw('Excessive indentation')
+	})
+
+	it('should not fail on blank styles', function()
+	{
+		const style = styler
+		`
+    
+
+           
+      `
+
+		const object = {}
+
+		style.should.deep.equal(object)
+	})
+
+	it('should not fail on same indentation of the only two lines', function()
+	{
+		const style = styler
+		`
+    test 1
+    test 2
+		`
+
+		const object =
+		{
+			'test 1': {},
+			'test 2': {}
+		}
+		
+		style.should.deep.equal(object)
+	})
+
+	it('should not fail on only one line', function()
+	{
+		const style = styler` test 1 `
+
+		const object =
+		{
+			'test 1': {}
+		}
+		
+		style.should.deep.equal(object)
+	})
 })

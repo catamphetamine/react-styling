@@ -95,7 +95,7 @@ export default class Tabulator
 		}
 
 		// check for messed up tabulation
-		if (lines[0].tabs !== 1)
+		if (lines.length > 0 && lines[0].tabs !== 1)
 		{
 			throw new Error(`Invalid indentation at line ${lines[0].index}: "${lines[0].original_line}"`)
 		}
@@ -139,6 +139,20 @@ Tabulator.determine_tabulation = function(lines)
 		}
 	}
 
+	function spaced_tab(tab_width)
+	{
+		const symbol = repeat(' ', tab_width)
+
+		const spaced_tab = 
+		{
+			symbol: symbol,
+			regexp: new RegExp(`^(${symbol})+`, 'g'),
+			regexp_anywhere: new RegExp(`(${symbol})+`, 'g')
+		}
+
+		return spaced_tab
+	}
+
 	function calculate_leading_spaces(line)
 	{
 		let counter = 0
@@ -152,10 +166,10 @@ Tabulator.determine_tabulation = function(lines)
 	// has to be at least two of them
 	if (lines.length === 0)
 	{
-		throw new Error(`Couldn't decide on tabulation type. Not enough lines.`)
+		return tab
+		// throw new Error(`Couldn't decide on tabulation type. Not enough lines.`)
 	}
 
-	/* istanbul ignore next: not a probable case in styles scenario */
 	if (lines.length === 1)
 	{
 		const tab = is_tabulated(lines[0])
@@ -164,7 +178,7 @@ Tabulator.determine_tabulation = function(lines)
 			return tab
 		}
 
-		return calculate_leading_spaces(lines[0])
+		return spaced_tab(calculate_leading_spaces(lines[0]))
 	}
 
 	// if we're using tabs for tabulation
@@ -177,25 +191,18 @@ Tabulator.determine_tabulation = function(lines)
 	// take the first two lines,
 	// calculate their indentation,
 	// substract it and you've got the tab width
-	const tab_width = Math.abs(substract(
+	const tab_width = Math.abs(substract
+	(
 		lines
 			.slice(0, 2)
 			.map(calculate_leading_spaces)
-	))
+	)) 
+	|| 1
 
-	if (tab_width === 0)
-	{
-		throw new Error(`Couldn't decide on tabulation type. Same indentation.`)
-	}
+	// if (tab_width === 0)
+	// {
+	// 	throw new Error(`Couldn't decide on tabulation type. Same indentation.`)
+	// }
 
-	const symbol = repeat(' ', tab_width)
-
-	const spaced_tab = 
-	{
-		symbol: symbol,
-		regexp: new RegExp(`^(${symbol})+`, 'g'),
-		regexp_anywhere: new RegExp(`(${symbol})+`, 'g')
-	}
-
-	return spaced_tab
+	return spaced_tab(tab_width)
 }
