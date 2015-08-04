@@ -712,12 +712,16 @@ menu
 
 	it('should not fail on only one line', function()
 	{
-		const style = styler` test 1 `
+		let style = styler` test 1 `
 
 		const object =
 		{
 			'test 1': {}
 		}
+		
+		style.should.deep.equal(object)
+
+		style = styler`	test 1 `
 		
 		style.should.deep.equal(object)
 	})
