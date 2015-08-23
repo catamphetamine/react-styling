@@ -69,23 +69,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _tabulator = __webpack_require__(26);
 	
+	var _tabulator2 = _interopRequireDefault(_tabulator);
+	
 	// using ES6 template strings
 	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/template_strings
-	
-	var _tabulator2 = _interopRequireDefault(_tabulator);
 	
 	function styler(strings) {
 		var style = '';
 	
 		// restore the whole string from "strings" and "values" parts
 		var i = 0;
-	
-		for (var _len = arguments.length, values = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-			values[_key - 1] = arguments[_key];
-		}
-	
 		while (i < strings.length) {
 			style += strings[i];
+	
+			for (var _len = arguments.length, values = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+				values[_key - 1] = arguments[_key];
+			}
+	
 			if ((0, _helpers.exists)(values[i])) {
 				style += values[i];
 			}
@@ -185,8 +185,9 @@ return /******/ (function(modules) { // webpackBootstrap
 			// if someone forgot a trailing colon in the style class name - trim it
 			// (or maybe these are Python people)
 			if ((0, _helpers.ends_with)(name, ':')) {
-				name = name.substring(0, name.length - ':'.length);
+				name = name.substring(0, name.length - ':'.length)
 				// throw new Error(`Remove the trailing colon at line: ${original_line}`)
+				;
 			}
 	
 			// this child node's styles
@@ -686,8 +687,8 @@ return /******/ (function(modules) { // webpackBootstrap
 		return typeof what !== 'undefined';
 	};
 	
-	// if the string starts with the substring
 	exports.exists = exists;
+	// if the string starts with the substring
 	
 	function starts_with(string, what) {
 		return string.indexOf(what) === 0;
@@ -1141,17 +1142,17 @@ return /******/ (function(modules) { // webpackBootstrap
 			this.tab = tab;
 		}
 	
-		// remove some tabs in the beginning
-	
 		_createClass(Tabulator, [{
 			key: 'reduce_indentation',
+	
+			// remove some tabs in the beginning
 			value: function reduce_indentation(line, how_much) {
 				return line.substring(this.tab.symbol.length * how_much);
 			}
-	
-			// how many "tabs" are there before content of this line
 		}, {
 			key: 'calculate_indentation',
+	
+			// how many "tabs" are there before content of this line
 			value: function calculate_indentation(line) {
 				var matches = line.match(this.tab.regexp);
 	
@@ -1218,10 +1219,10 @@ return /******/ (function(modules) { // webpackBootstrap
 				}
 				// if there is excessive tabulation - trim it
 				else if (minimum_indentation > 1) {
-						lines.forEach(function (line) {
-							line.tabs -= minimum_indentation - 1;
-						});
-					}
+					lines.forEach(function (line) {
+						line.tabs -= minimum_indentation - 1;
+					});
+				}
 	
 				// check for messed up tabulation
 				if (lines.length > 0 && lines[0].tabs !== 1) {
@@ -1244,12 +1245,11 @@ return /******/ (function(modules) { // webpackBootstrap
 		}]);
 	
 		return Tabulator;
-	})()
-	
-	// decide whether it's tabs or spaces
-	;
+	})();
 	
 	exports['default'] = Tabulator;
+	
+	// decide whether it's tabs or spaces
 	Tabulator.determine_tabulation = function (lines) {
 		var substract = function substract(pair) {
 			return pair[0] - pair[1];
@@ -1295,8 +1295,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		// has to be at least two of them
 		if (lines.length === 0) {
-			return tab;
+			return tab
 			// throw new Error(`Couldn't decide on tabulation type. Not enough lines.`)
+			;
 		}
 	
 		if (lines.length === 1) {
