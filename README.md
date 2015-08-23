@@ -46,7 +46,7 @@ $ npm install react-styling
 
 This module uses an ES6 feature called [template strings](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/template_strings) which allows you to write multiline strings (finally). You can still use this module with the old ES5 (regular javascript) syntax passing it a regular string, but it's much more convenient for you to just use [Babel](https://babeljs.io/docs/setup/) for ES6 to ES5 conversion (everyone out there does it by the way).
 
-```js
+```javascript
 import React from 'react'
 import styler from 'react-styling'
 
@@ -134,7 +134,7 @@ const style = styler
 
 The example is self-explanatory. The CSS text in the example above will be transformed to this JSON object
 
-```js
+```javascript
 {
   menu:
   {
@@ -230,6 +230,49 @@ In the example above, notice the ampersand before the "current" style class - th
 
 Modifiers, when populated with the parent's styles, will also be populated with all the parent's pseudo-classes (those ones starting with a colon) and media queries (those ones starting with an at). This is done for better and seamless integration with [Radium](https://github.com/halt-hammerzeit/react-styling#radium).
 
+Modifiers are applied all the way down to the bottom of the style subtree and, therefore, all the child styles are "modified" too. For example, this stylesheet
+
+```javascript
+original
+  display : inline-block
+
+  item
+    border : none
+    color  : black
+
+  &active
+    item
+      color      : white
+      background : black
+```
+
+will be transformed to this style object
+
+```javascript
+original:
+{
+  display: 'inline-block',
+
+  item:
+  {
+    border : 'none',
+    color  : 'black'
+  },
+
+  active:
+  {
+    display: 'inline-block',
+
+    item:
+    {
+      border     : 'none',
+      color      : 'white',
+      background : 'black'
+    }
+  }
+}
+```
+
 ### Radium
 
 There's a (popular) thing called [Radium](https://github.com/FormidableLabs/radium), which allows you to (citation):
@@ -243,7 +286,7 @@ You can use react-styling with this Radium library too: write you styles in text
 
 Here is the [DroidList example](https://github.com/FormidableLabs/radium/tree/master/docs/faq#how-do-i-use-pseudo-selectors-like-checked-or-last) from Radium FAQ rewritten using react-styling. Because `first` and `last` are "modifiers" here the `:hover` pseudo-class will be present inside each of them as well.
 
-```as
+```javascript
 var droids = [
   'R2-D2',
   'C-3PO',
@@ -323,7 +366,7 @@ After developing, the full test suite can be evaluated by running:
 npm test
 ```
 
-While actively developing, we recommend running
+While actively developing, one can use
 
 ```sh
 npm run watch

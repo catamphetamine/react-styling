@@ -232,28 +232,40 @@ function expand_modifier_style_classes(node)
 	const style          = get_node_style(node)
 	const pseudo_classes = get_node_pseudo_classes(node)
 
-	Object.keys(node)
-	// get all modifier style class nodes
-	.filter(name => typeof(node[name]) === 'object' && node[name]._is_a_modifier)
+	const modifiers = Object.keys(node)
+		// get all modifier style class nodes
+		.filter(name => typeof(node[name]) === 'object' && node[name]._is_a_modifier)
+	
 	// for each modifier style class node
-	.forEach(function(name)
+	modifiers.forEach(function(name)
 	{
-		// delete the modifier flags
-		delete node[name]._is_a_modifier
+		// // delete the modifier flags
+		// delete node[name]._is_a_modifier
 
 		// include parent node's styles and pseudo-classes into the modifier style class node
 		node[name] = extend({}, style, pseudo_classes, node[name])
+
+		// expand descendant style class nodes of this modifier
+		expand_modified_subtree(node, node[name])
+	})
+	
+	// for each modifier style class node
+	modifiers.forEach(function(name)
+	{
+		// delete the modifier flags
+		delete node[name]._is_a_modifier
 	})
 
+	// recurse
 	Object.keys(node)
-	// get all style class nodes
-	.filter(name => typeof(node[name]) === 'object')
-	// for each style class node
-	.forEach(function(name)
-	{
-		// recurse
-		expand_modifier_style_classes(node[name])
-	})
+		// get all style class nodes
+		.filter(name => typeof(node[name]) === 'object')
+		// for each style class node
+		.forEach(function(name)
+		{
+			// recurse
+			expand_modifier_style_classes(node[name])
+		})
 
 	return node
 }
@@ -279,7 +291,7 @@ function get_node_pseudo_classes(node)
 	return Object.keys(node)
 	// get all child style classes this style class node, which start with a colon and aren't modifiers
 	.filter(property => typeof(node[property]) === 'object' 
-		&& (starts_with(property, ':') || starts_with(property, '@')) 
+		&& is_a_pseudo_class(property)
 		&& !node[property]._is_a_modifier)
 	// for each child style class of this style class node
 	.reduce(function(pseudo_classes, name)
@@ -288,4 +300,44 @@ function get_node_pseudo_classes(node)
 		return pseudo_classes
 	}, 
 	{})
+}
+
+// for each (non-modifier) child style class of the modifier style class, 
+// check if "this child style class" is also present 
+// as a (non-modifier) "child of the current style class".
+// if it is, then extend "this child style class" with the style 
+// from the "child of the current style class".
+// (and repeat recursively)
+function expand_modified_subtree(node, modified_node)
+{
+	// from the modified style class node
+	Object.keys(modified_node)
+	// for all non-pseudo-classes
+	.filter(name => !is_a_pseudo_class(name))
+	// get all non-modifier style class nodes
+	.filter(name => typeof(modified_node[name]) === 'object' && !modified_node[name]._is_a_modifier)
+	// which are also present as non-modifier style classes
+	// in the base style class node
+	.filter(name => typeof(node[name]) === 'object' && !node[name]._is_a_modifier)
+
+	// for each such style class node
+	.forEach(function(name)
+	{
+		// style of the original style class node
+		const style          = get_node_style(node[name])
+		// pseudo-classes of the original style class node
+		const pseudo_classes = get_node_pseudo_classes(node[name])
+
+		// mix in the styles
+		modified_node[name] = extend({}, style, pseudo_classes, modified_node[name])
+
+		// recurse
+		return expand_modified_subtree(node[name], modified_node[name])
+	})
+}
+
+// checks if this style class name designates a pseudo-class
+function is_a_pseudo_class(name)
+{
+	return starts_with(name, ':') || starts_with(name, '@')
 }

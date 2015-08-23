@@ -666,4 +666,81 @@ menu
 
 		style.should.deep.equal(object)
 	})
+
+
+	it('should extend modifiers\' subclasses with the corresponding styles from the original style tree node', function()
+	{
+		const style = styler
+		`
+			original
+				display : inline-block
+
+				item
+					border : none
+					color  : black
+
+					item_link
+						text-decoration : none
+
+						:hover
+							font-weight: bold
+
+				&active
+					item
+						color      : white
+						background : black
+
+						item_link
+							border : 1px
+		`
+
+		const object =
+		{
+			original:
+			{
+				display: 'inline-block',
+
+				item:
+				{
+					border : 'none',
+					color  : 'black',
+
+					item_link:
+					{
+						textDecoration : 'none',
+
+						':hover':
+						{
+							fontWeight: 'bold'
+						}
+					}
+				},
+
+				active:
+				{
+					display: 'inline-block',
+
+					item:
+					{
+						border     : 'none',
+						color      : 'white',
+						background : 'black',
+
+						item_link:
+						{
+							textDecoration : 'none',
+							border         : '1px',
+
+							':hover':
+							{
+								fontWeight: 'bold'
+							}
+						}
+					}
+				}
+			}
+		}
+
+		style.should.deep.equal(object)
+	})
 })
