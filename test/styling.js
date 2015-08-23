@@ -667,6 +667,7 @@ menu
 		style.should.deep.equal(object)
 	})
 
+<<<<<<< HEAD
 
 	it('should extend modifiers\' subclasses with the corresponding styles from the original style tree node', function()
 	{
@@ -692,10 +693,45 @@ menu
 
 						item_link
 							border : 1px
+=======
+	it('should fail on exccessive tabbing', function()
+	{
+		const style = 
+		`
+			menu
+					list-style-type: none
+		`
+
+		const test = () => styler(style)
+		test.should.throw('Excessive indentation')
+	})
+
+	it('should not fail on blank styles', function()
+	{
+		const style = styler
+		`
+    
+
+           
+      `
+
+		const object = {}
+
+		style.should.deep.equal(object)
+	})
+
+	it('should not fail on same indentation of the only two lines', function()
+	{
+		const style = styler
+		`
+    test 1
+    test 2
+>>>>>>> origin/master
 		`
 
 		const object =
 		{
+<<<<<<< HEAD
 			original:
 			{
 				display: 'inline-block',
@@ -741,6 +777,28 @@ menu
 			}
 		}
 
+=======
+			'test 1': {},
+			'test 2': {}
+		}
+		
+		style.should.deep.equal(object)
+	})
+
+	it('should not fail on only one line', function()
+	{
+		let style = styler` test 1 `
+
+		const object =
+		{
+			'test 1': {}
+		}
+		
+		style.should.deep.equal(object)
+
+		style = styler`	test 1 `
+		
+>>>>>>> origin/master
 		style.should.deep.equal(object)
 	})
 })

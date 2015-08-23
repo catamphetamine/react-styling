@@ -1,7 +1,14 @@
 import chai from 'chai'
-import styler from './../source/index'
+import Tabulator from './../source/tabulator'
 
 chai.should()
+
+function process_style(text)
+{
+	const lines = text.split('\n')
+	const tabulator = new Tabulator(Tabulator.determine_tabulation(lines))
+	tabulator.extract_tabulation(lines)
+}
 
 describe('tabulator', function()
 {
@@ -30,7 +37,7 @@ describe('tabulator', function()
                      background-color : #000000
       `
 
-		const test = () => styler(style)
+		const test = () => process_style(style)
 		test.should.throw('Invalid indentation (extra leading spaces)')
 	})
 
@@ -59,7 +66,7 @@ describe('tabulator', function()
                      background-color : #000000
       `
 
-		const test = () => styler(style)
+		const test = () => process_style(style)
 		test.should.throw('mixed tabs and spaces')
 	})
 
@@ -71,20 +78,8 @@ describe('tabulator', function()
 			 	list-style-type: none
 		`
 
-		const test = () => styler(style)
+		const test = () => process_style(style)
 		test.should.throw('mixed tabs and spaces')
-	})
-
-	it('should fail on exccessive tabbing', function()
-	{
-		const style = 
-		`
-			menu
-					list-style-type: none
-		`
-
-		const test = () => styler(style)
-		test.should.throw('Excessive indentation')
 	})
 
 	it('should fail on messed up indentation levels', function()
@@ -112,32 +107,7 @@ describe('tabulator', function()
          background-color : #000000
       `
 
-		const test = () => styler(style)
+		const test = () => process_style(style)
 		test.should.throw('Invalid indentation at line')
-	})
-
-	it('should fail on blank styles', function()
-	{
-		const style = 
-		`
-    
-
-           
-      `
-
-		const test = () => styler(style)
-		test.should.throw('Not enough lines')
-	})
-
-	it('should fail on same indentation of the only two lines', function()
-	{
-		const style = 
-		`
-    test 1
-    test 2
-		`
-
-		const test = () => styler(style)
-		test.should.throw('Same indentation')
 	})
 })
