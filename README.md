@@ -334,13 +334,9 @@ const style = styler`
 `
 ```
 
-### What's next
+### Performance
 
-I can add the features you want (or you can do it). I can work on making errors more user friendly and helpful if anyone else uses this module.
-
-If you want a feature, go create an issue (before making a pull request). If it doesn't work for you or you're having errors when using this module - go create an issue.
-
-Maybe I could also write a webpack loader to perform text-to-json conversion at compile time as opposed to run time. If anyone needs that at all.
+In the examples above, `react-styling` transforms style text into a JSON object every time a React component is instantiated. Therefore, it happens in the web browser every time a user navigates a page. I guess the penalty on the performance is negligible in this scenario. Yet, if someone wants to play with Babel they can write a Babel plugin (similar to the one they use in [Relay](https://facebook.github.io/relay/docs/guides-babel-plugin.html#content)) and submit a Pull Request.
 
 ### Contributing
 
