@@ -751,11 +751,17 @@ menu
 			can_style, multiple_classes, at_once
 				font-family : Sans
 
+				child
+					display : none
+
 			can_style
 				font-size : 12pt
 
 			multiple_classes, at_once
 				font-size : 8pt
+
+				&modifier
+					color : red
 		`
 
 		const object =
@@ -763,19 +769,48 @@ menu
 			can_style:
 			{
 				fontFamily : 'Sans',
-				fontSize   : '12pt'
+				fontSize   : '12pt',
+
+				child:
+				{
+					display : 'none'
+				}
 			},
 
 			multiple_classes:
 			{
 				fontFamily : 'Sans',
-				fontSize   : '8pt'
+				fontSize   : '8pt',
+
+				child:
+				{
+					display : 'none'
+				},
+
+				modifier:
+				{
+					fontFamily : 'Sans',
+					fontSize   : '8pt',
+					color      : 'red'
+				}
 			},
-			
+
 			at_once:
 			{
 				fontFamily : 'Sans',
-				fontSize   : '8pt'
+				fontSize   : '8pt',
+
+				child:
+				{
+					display : 'none'
+				},
+
+				modifier:
+				{
+					fontFamily : 'Sans',
+					fontSize   : '8pt',
+					color      : 'red'
+				}
 			}
 		}
 
