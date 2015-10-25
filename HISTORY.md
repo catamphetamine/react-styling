@@ -1,3 +1,8 @@
+1.3.0 / 25.10.2015
+===================
+
+  * Added support for comma separated style classes and further style class extension
+
 1.2.0 / 10.07.2015
 ===================
 

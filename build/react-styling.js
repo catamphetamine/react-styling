@@ -153,6 +153,68 @@ return /******/ (function(modules) { // webpackBootstrap
 		return (0, _helpers.extend)(style_object, parse_children(children_lines));
 	}
 	
+	// separates style lines from children lines
+	function split_into_style_lines_and_children_lines(lines) {
+		// get this node style lines
+		var style_lines = lines.filter(function (line) {
+			// styles always have indentation of 2
+			if (line.tabs !== 2) {
+				return false;
+			}
+	
+			// detect generic css style line (skip modifier classes and media queries)
+			var colon_index = line.line.indexOf(':');
+			return !(0, _helpers.starts_with)(line.line, '&') && !(0, _helpers.starts_with)(line.line, '@') && (colon_index > 0 && colon_index < line.line.length - 1);
+		});
+	
+		// get children nodes' lines
+		var children_lines = lines.filter(function (line) {
+			return style_lines.indexOf(line) < 0;
+		});
+	
+		// reduce tabulation for this child node's (or these child nodes') child nodes' lines
+		children_lines.forEach(function (line) {
+			return line.tabs--;
+		});
+	
+		// check for excessive indentation of children
+		if (children_lines.length > 0) {
+			var line = children_lines[0];
+			if (line.tabs !== 1) {
+				throw new Error('Excessive indentation at line ' + line.index + ': "' + line.original_line + '"');
+			}
+		}
+	
+		return { style_lines: style_lines, children_lines: children_lines };
+	}
+	
+	// parses a style class node name
+	function parse_node_name(name) {
+		// is it a "modifier" style class
+		var is_a_modifier = false;
+	
+		// detect modifier style classes
+		if ((0, _helpers.starts_with)(name, '&')) {
+			name = name.substring('&'.length);
+			is_a_modifier = true;
+		}
+	
+		// support old-school CSS syntax
+		if ((0, _helpers.starts_with)(name, '.')) {
+			name = name.substring('.'.length);
+		}
+	
+		// if someone forgot a trailing colon in the style class name - trim it
+		// (or maybe these are Python people)
+		if ((0, _helpers.ends_with)(name, ':')) {
+			name = name.substring(0, name.length - ':'.length)
+			// throw new Error(`Remove the trailing colon at line: ${original_line}`)
+			;
+		}
+	
+		return { name: name, is_a_modifier: is_a_modifier };
+	}
+	
 	// parses child nodes' lines of text into the corresponding child node JSON objects
 	function parse_children(lines) {
 		// preprocess the lines (filter out comments, blank lines, etc)
@@ -165,88 +227,71 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 		// parse each child node's lines
 		return split_lines_by_child_nodes(lines).map(function (lines) {
-			// the first line is this child node's name
-			var name = lines.shift().line;
+			// the first line is this child node's name (or names)
+			var declaration = lines.shift().line;
 	
-			// is it a "modifier" style class
-			var is_a_modifier = false;
-	
-			// detect modifier style classes
-			if ((0, _helpers.starts_with)(name, '&')) {
-				name = name.substring('&'.length);
-				is_a_modifier = true;
-			}
-	
-			// support old-school CSS syntax
-			if ((0, _helpers.starts_with)(name, '.')) {
-				name = name.substring('.'.length);
-			}
-	
-			// if someone forgot a trailing colon in the style class name - trim it
-			// (or maybe these are Python people)
-			if ((0, _helpers.ends_with)(name, ':')) {
-				name = name.substring(0, name.length - ':'.length)
-				// throw new Error(`Remove the trailing colon at line: ${original_line}`)
-				;
-			}
-	
-			// this child node's styles
-			var styles = lines.filter(function (line) {
-				// styles always have indentation of 2
-				if (line.tabs !== 2) {
-					return false;
-				}
-	
-				// detect generic css style line (skip modifier classes and media queries)
-				var colon_index = line.line.indexOf(':');
-				return !(0, _helpers.starts_with)(line.line, '&') && !(0, _helpers.starts_with)(line.line, '@') && (colon_index > 0 && colon_index < line.line.length - 1);
+			// child nodes' names
+			var names = declaration.split(',').map(function (name) {
+				return name.trim();
 			});
 	
-			// the lines corresponding to this child node's child nodes and all their children, etc
-			var children_lines = lines.filter(function (line) {
-				return styles.indexOf(line) < 0;
-			});
+			// separate style lines from children lines
+	
+			var _split_into_style_lines_and_children_lines = split_into_style_lines_and_children_lines(lines);
+	
+			var style_lines = _split_into_style_lines_and_children_lines.style_lines;
+			var children_lines = _split_into_style_lines_and_children_lines.children_lines;
 	
 			// convert style lines info to just text lines
-			styles = styles.map(function (line) {
+			var styles = style_lines.map(function (line) {
 				return line.line;
 			});
 	
-			// reduce tabulation for this child node's child nodes' lines
-			children_lines.forEach(function (line) {
-				return line.tabs--;
-			});
-	
-			// check for excessive indentation of children
-			if (children_lines.length > 0) {
-				var line = children_lines[0];
-				if (line.tabs !== 1) {
-					throw new Error('Excessive indentation at line ' + line.index + ': "' + line.original_line + '"');
-				}
-			}
-	
-			// using this child node's style lines
-			// and this child node's child nodes' lines,
-			// generate this child node's style JSON object
+			// using this child node's (or these child nodes') style lines
+			// and this child node's (or these child nodes') child nodes' lines,
+			// generate this child node's (or these child nodes') style JSON object
 			// (this is gonna be a recursion)
-			var json = parse_node_json(styles, children_lines);
+			var style_json = parse_node_json(styles, children_lines);
 	
-			// set the modifier flag if it's the case
-			if (is_a_modifier) {
-				json._is_a_modifier = true;
-			}
+			// generate style json for this child node (or child nodes)
+			return names.map(function (node_declaration) {
+				// parse this child node name
 	
-			// this child node's style JSON object is ready
-			return { name: name, json: json };
+				var _parse_node_name = parse_node_name(node_declaration);
+	
+				var name = _parse_node_name.name;
+				var is_a_modifier = _parse_node_name.is_a_modifier;
+	
+				// clone the style JSON object for this child node
+				var json = (0, _helpers.extend)({}, style_json);
+	
+				// set the modifier flag if it's the case
+				if (is_a_modifier) {
+					json._is_a_modifier = true;
+				}
+	
+				// this child node's style JSON object
+				return { name: name, json: json };
+			});
 		})
+		// convert an array of arrays to a flat array
+		.reduce(function (array, child_array) {
+			return array.concat(child_array);
+		}, [])
 		// combine all the child nodes into a single JSON object
 		.reduce(function (nodes, node) {
-			nodes[node.name] = node.json;
+			// if style already exists for this child node, extend it
+			if (nodes[node.name]) {
+				(0, _helpers.extend)(nodes[node.name], node.json);
+			} else {
+				nodes[node.name] = node.json;
+			}
+	
 			return nodes;
 		}, {});
 	}
 	
-	// filters out commets, blank lines, etc
+	// filters out comments, blank lines, etc
 	function filter_lines_for_parsing(lines) {
 		// filter out blank lines
 		lines = lines.filter(function (line) {

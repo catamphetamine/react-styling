@@ -38,14 +38,15 @@
     "test-travis": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --compilers js:babel/register --colors --reporter spec test/",
     "gh-pages": "webpack --action=gh-pages --colors --config ./config",
     "deploy-gh-pages": "TARGET=gh-pages node ./config/deploy-gh-pages.js",
-    "build": "npm-run-all build-regular build-minified",
+    "build": "npm-run-all build-regular build-minified babel-transpiled-modules",
     "build-regular": "webpack --action=build --colors",
     "build-minified": "webpack --action=build-minified --colors",
     "clean-for-build-modules": "rimraf ./babel-transpiled-modules/**/*",
     "build-modules": "babel ./source --optional runtime --out-dir ./babel-transpiled-modules --source-maps",
     "babel-transpiled-modules": "npm-run-all clean-for-build-modules build-modules",
     "commit-new-build": "git commit --all --message=\"Update build\"",
-    "preversion": "npm-run-all test build babel-transpiled-modules commit-new-build",
+    "tryout": "npm-run-all test build pack",
+    "pack": "npm pack",
     "watch": "babel scripts/watch.js | node"
   },
   "repository": {

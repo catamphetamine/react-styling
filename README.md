@@ -90,6 +90,18 @@ const style = styler
           color            : #ffffff
           background-color : #000000
 
+  // supports comma separated style classes
+  // and further style class extension
+  
+  can_style, multiple_classes, at_once
+    font-family : Sans
+
+  can_style
+    font-size : 12pt
+
+  multiple_classes, at_once
+    font-size : 8pt
+
   /*
   multi
   line
@@ -161,6 +173,24 @@ The example is self-explanatory. The CSS text in the example above will be trans
         }
       }
     }
+  },
+
+  can_style:
+  {
+    fontFamily : 'Sans',
+    fontSize   : '12pt'
+  },
+
+  multiple_classes:
+  {
+    fontFamily : 'Sans',
+    fontSize   : '8pt'
+  },
+  
+  at_once:
+  {
+    fontFamily : 'Sans',
+    fontSize   : '8pt'
   },
 
   'old-school-regular-css-syntax':

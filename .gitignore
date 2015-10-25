@@ -1,3 +1,6 @@
+# testing package
+/react-styling-*.tgz
+
 # test coverage folder
 /coverage/
 

@@ -742,4 +742,43 @@ menu
 
 		style.should.deep.equal(object)
 	})
+
+	it('should support comma separated styles', function()
+	{
+
+		const style = styler
+		`
+			can_style, multiple_classes, at_once
+				font-family : Sans
+
+			can_style
+				font-size : 12pt
+
+			multiple_classes, at_once
+				font-size : 8pt
+		`
+
+		const object =
+		{
+			can_style:
+			{
+				fontFamily : 'Sans',
+				fontSize   : '12pt'
+			},
+
+			multiple_classes:
+			{
+				fontFamily : 'Sans',
+				fontSize   : '8pt'
+			},
+			
+			at_once:
+			{
+				fontFamily : 'Sans',
+				fontSize   : '8pt'
+			}
+		}
+
+		style.should.deep.equal(object)
+	})
 })
