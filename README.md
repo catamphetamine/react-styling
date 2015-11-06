@@ -407,7 +407,7 @@ When you're ready to test your new functionality on a real project, you can run
 npm pack
 ```
 
-It will `build`, `test` and then create a `.tar.gz` archive which you can then install in your project folder
+It will `build`, `test` and then create a `.tgz` archive which you can then install in your project folder
 
 ```sh
 npm install [module name with version].tar.gz
