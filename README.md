@@ -392,7 +392,7 @@ After developing, the full test suite can be evaluated by running:
 npm test
 ```
 
-While actively developing, one can use
+While actively developing, one can use (personally I don't use it)
 
 ```sh
 npm run watch
@@ -400,6 +400,18 @@ npm run watch
 
 in a terminal. This will watch the file system and run tests automatically 
 whenever you save a js file.
+
+When you're ready to test your new functionality on a real project, you can run
+
+```sh
+npm pack
+```
+
+It will `build`, `test` and then create a `.tar.gz` archive which you can then install in your project folder
+
+```sh
+npm install [module name with version].tar.gz
+```
 
 ## License
 
