@@ -379,7 +379,7 @@ const style = styler`
 
 ### Performance
 
-In the examples above, `react-styling` transforms style text into a JSON object every time a React component is instantiated. Therefore, it happens in the web browser every time a user navigates a page. I guess the penalty on the performance is negligible in this scenario. Yet, if someone wants to play with Babel they can write a Babel plugin (similar to [the one](https://github.com/facebook/relay/blob/master/scripts/babel-relay-plugin/src/getBabelRelayPlugin.js#L105) they use in [Relay](https://facebook.github.io/relay/docs/guides-babel-plugin.html#content)) and submit a Pull Request.
+In the examples above, `react-styling` transforms style text into a JSON object every time a React component is instantiated and then it will reuse that JSON style object for all `.render()` calls. React component instantiation happens, for example, in a `for ... of` loop or when a user navigates a page. I guess the penalty on the performance is negligible in this scenario. Yet, if someone wants to play with Babel they can write a Babel plugin (similar to [the one](https://github.com/facebook/relay/blob/master/scripts/babel-relay-plugin/src/getBabelRelayPlugin.js#L105) they use in [Relay](https://facebook.github.io/relay/docs/guides-babel-plugin.html#content)) and submit a Pull Request.
 
 ### Contributing
 
