@@ -344,7 +344,7 @@ class DroidList extends React.Component {
     return (
       <ul style={style.droids}>
         {droids.map((droid, index, droids) =>
-          <li key={index} style={index === 0 ? style.droids.droid_first : index === (droids.length - 1) ? style.droids.droid_last : style.droids.droid}>
+          <li key={index} style={index === 0 ? style.droid_first : index === (droids.length - 1) ? style.droid_last : style.droid}>
             {droid}
           </li>
         )}
@@ -357,23 +357,23 @@ const style = styler`
   droids
     padding : 0
 
-    droid
-      border-color : black
-      border-style : solid
-      border-width : 1px 1px 0 1px
-      cursor       : pointer
-      list-style   : none
-      padding      : 12px
+  droid
+    border-color : black
+    border-style : solid
+    border-width : 1px 1px 0 1px
+    cursor       : pointer
+    list-style   : none
+    padding      : 12px
 
-      :hover
-        background : #eee
+    :hover
+      background : #eee
 
-      &first
-        border-radius : 12px 12px 0 0
+    &first
+      border-radius : 12px 12px 0 0
 
-      &last
-        border-radius : 0 0 12px 12px
-        border-width  : 1px
+    &last
+      border-radius : 0 0 12px 12px
+      border-width  : 1px
 `
 ```
 
