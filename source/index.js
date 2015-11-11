@@ -402,7 +402,7 @@ function validate_child_style_class_types(parent_node_names, names)
 		// if it's a pseudoclass, it can't contain any style classes
 		if (is_pseudo_class(parent) && not_empty(names))
 		{
-			throw new Error(`A style class declaration "${names[0]}" found inside a pseudoclass "${parent}" at line ${declaration_line.index}. Pseudoclasses (:hover, etc) can't contain child style classes.`)
+			throw new Error(`A style class declaration "${names[0]}" found inside a pseudoclass "${parent}". Pseudoclasses (:hover, etc) can't contain child style classes.`)
 		}
 
 		// if it's a media query style class, it must contain only pseudoclasses
@@ -412,7 +412,7 @@ function validate_child_style_class_types(parent_node_names, names)
 
 			if (non_pseudoclass)
 			{
-				throw new Error(`A non-pseudoclass "${non_pseudoclass}" found inside a media query style class "${parent}" at line ${declaration_line.index}. Media query style classes can only contain pseudoclasses (:hover, etc).`)
+				throw new Error(`A non-pseudoclass "${non_pseudoclass}" found inside a media query style class "${parent}". Media query style classes can only contain pseudoclasses (:hover, etc).`)
 			}
 		}
 	}

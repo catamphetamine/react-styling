@@ -5,6 +5,34 @@ chai.should()
 
 describe('styler', function()
 {
+	it('shouldn\'t allow invalid style class type hierarchy', function()
+	{
+		const style_function = (style) => (() => styler(style))
+
+		style_function
+		(`
+			menu
+				:hover
+					:active
+		`)
+		.should.throw('Pseudoclasses (:hover, etc) can\'t contain child style classes')
+
+		style_function
+		(`
+			menu
+				@media
+					:active
+		`)
+
+		style_function
+		(`
+			menu
+				@media
+					passive
+		`)
+		.should.throw('Media query style classes can only contain pseudoclasses (:hover, etc)')
+	})
+
 	it('should convert text to JSON object', function()
 	{
 		const dummy_variable_for_template_string_testing = 'none'
@@ -44,7 +72,7 @@ describe('styler', function()
 		const object =
 		{
 			background: 'red',
-			
+
 			menu:
 			{
 				listStyleType: 'none',
