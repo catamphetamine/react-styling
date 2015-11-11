@@ -11,6 +11,8 @@ describe('styler', function()
 
 		const style = styler
 		`
+			background: red
+
 			menu
 				list-style-type: ${dummy_variable_for_template_string_testing}
 
@@ -41,6 +43,8 @@ describe('styler', function()
 
 		const object =
 		{
+			background: 'red',
+			
 			menu:
 			{
 				listStyleType: 'none',

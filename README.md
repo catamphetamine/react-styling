@@ -254,6 +254,16 @@ You can also use YAML-alike syntax if you're one of those Python people.
 
 You can use both one-line comments and multiline comments.
 
+### Nesting
+
+In the example above there's a nested tree of CSS style classes. You can flatten it if you like by using `import styler from 'react-styling/flat'` instead of the default `import styler from 'react-styling'`.
+
+The difference is that the flat styler will flatten the CSS style class tree by prefixing all the style class names accordingly. 
+
+The reason this feature was introduced is that, for example, [Radium](#radium) would give warnings if a style object contained child style objects.
+
+Also, I noticed that React, given a style object containing child style objects, creates irrelevant inline styles, e.g. `<span style="color: black; child_style_object_name: [Object object]; background: white"/>`: it doesn't break anything, but if some day React starts emitting warnings for that then just start using the `flat` styler.
+
 ### Modifiers
 
 In the example above, notice the ampersand before the "current" style class - this feature is optional (you don't need to use it at all), and it means that this style class is a "modifier" and all the style from its parent style class will be included in this style class. In this example, the padding, color, display and text-decoration from the "link" style class will be included in the "current" style class, so it works just like LESS/SASS ampersand. If you opt in to using the "modifiers" feature then you won't need to do manual merging like `style="extend({}, style.menu.item.link, style.menu.item.link.current)"`.
@@ -317,6 +327,9 @@ You can use react-styling with this Radium library too: write you styles in text
 Here is the [DroidList example](https://github.com/FormidableLabs/radium/tree/master/docs/faq#how-do-i-use-pseudo-selectors-like-checked-or-last) from Radium FAQ rewritten using react-styling. Because `first` and `last` are "modifiers" here the `:hover` pseudo-class will be present inside each of them as well.
 
 ```javascript
+// notice the use of the "/flat" styler as opposed to the default one
+import styler from 'react-styling/flat'
+
 var droids = [
   'R2-D2',
   'C-3PO',
@@ -331,7 +344,7 @@ class DroidList extends React.Component {
     return (
       <ul style={style.droids}>
         {droids.map((droid, index, droids) =>
-          <li key={index} style={index === 0 ? style.droids.droid.first : index === (droids.length - 1) ? style.droids.droid.last : style.droids.droid}>
+          <li key={index} style={index === 0 ? style.droids.droid_first : index === (droids.length - 1) ? style.droids.droid_last : style.droids.droid}>
             {droid}
           </li>
         )}

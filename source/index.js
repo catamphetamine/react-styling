@@ -1,9 +1,9 @@
-import { exists, starts_with, ends_with, is_blank, zip, extend } from './helpers'
+import { exists, starts_with, ends_with, is_blank, zip, extend, not_empty } from './helpers'
 import Tabulator from './tabulator'
 
 // using ES6 template strings
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/template_strings
-export default function styler(strings, ...values)
+export default function(strings, ...values)
 {
 	let style = ''
 
@@ -38,14 +38,14 @@ function parse_style_json_object(text)
 	const tabulator = new Tabulator(Tabulator.determine_tabulation(lines))
 
 	// parse text into JSON object
-	const style_json = parse_node_json([], tabulator.extract_tabulation(lines))
+	const style_json = parse_style_class(tabulator.extract_tabulation(lines), [])
 
 	// expand "modifier" style classes
 	return expand_modifier_style_classes(style_json)
 }
 
 // parse child nodes' lines (and this node's styles) into this node's style JSON object
-function parse_node_json(styles, children_lines)
+function parse_node_json(styles, children_lines, node_names)
 {
 	// transform this node's style lines from text to JSON properties and their values
 	const style_object = styles.map(function(style)
@@ -82,7 +82,7 @@ function parse_node_json(styles, children_lines)
 	{})
 
 	// parse child nodes and add them to this node's JSON object
-	return extend(style_object, parse_children(children_lines))
+	return extend(style_object, parse_children(children_lines, node_names))
 }
 
 // separates style lines from children lines
@@ -91,17 +91,25 @@ function split_into_style_lines_and_children_lines(lines)
 	// get this node style lines
 	const style_lines = lines.filter(function(line)
 	{
-		// styles always have indentation of 2
-		if (line.tabs !== 2)
+		// styles always have indentation of 1
+		if (line.tabs !== 1)
 		{
 			return false
 		}
 
 		// detect generic css style line (skip modifier classes and media queries)
 		const colon_index = line.line.indexOf(':')
+
+		// is not a modifier class
 		return !starts_with(line.line, '&') 
+			// is not a media query style class name declaration
 			&& !starts_with(line.line, '@') 
-			&& (colon_index > 0 && colon_index < line.line.length - 1)
+			// has a colon
+			&& colon_index >= 0 
+			// is not a state class (e.g. :hover) name declaration
+			&& colon_index !== 0
+			// is not a yaml-style class name declaration
+			&& colon_index < line.line.length - 1
 	})
 
 	// get children nodes' lines
@@ -109,16 +117,6 @@ function split_into_style_lines_and_children_lines(lines)
 
 	// reduce tabulation for this child node's (or these child nodes') child nodes' lines
 	children_lines.forEach(line => line.tabs--)
-
-	// check for excessive indentation of children
-	if (children_lines.length > 0)
-	{
-		const line = children_lines[0]
-		if (line.tabs !== 1)
-		{
-			throw new Error(`Excessive indentation at line ${line.index}: "${line.original_line}"`)
-		}
-	}
 
 	return { style_lines, children_lines}
 }
@@ -142,8 +140,8 @@ function parse_node_name(name)
 		name = name.substring('.'.length)
 	}
 
-	// if someone forgot a trailing colon in the style class name - trim it
-	// (or maybe these are Python people)
+	// if there is a trailing colon in the style class name - trim it
+	// (Python people with yaml-alike syntax)
 	if (ends_with(name, ':'))
 	{
 		name = name.substring(0, name.length - ':'.length)
@@ -154,7 +152,7 @@ function parse_node_name(name)
 }
 
 // parses child nodes' lines of text into the corresponding child node JSON objects
-function parse_children(lines)
+function parse_children(lines, parent_node_names)
 {
 	// preprocess the lines (filter out comments, blank lines, etc)
 	lines = filter_lines_for_parsing(lines)
@@ -169,22 +167,25 @@ function parse_children(lines)
 	return split_lines_by_child_nodes(lines).map(function(lines)
 	{
 		// the first line is this child node's name (or names)
-		const declaration = lines.shift().line
+		const declaration_line = lines.shift()
+
+		// check for excessive indentation of the first child style class
+		if (declaration_line.tabs !== 0)
+		{
+			throw new Error(`Excessive indentation (${declaration_line.tabs} more "tabs" than needed) at line ${declaration_line.index}: "${declaration_line.original_line}"`)
+		}
+
+		// style class name declaration
+		const declaration = declaration_line.line
 
 		// child nodes' names
 		const names = declaration.split(',').map(name => name.trim())
 
-		// separate style lines from children lines
-		const { style_lines, children_lines } = split_into_style_lines_and_children_lines(lines)
+		// style class nesting validation
+		validate_child_style_class_types(parent_node_names, names)
 
-		// convert style lines info to just text lines
-		const styles = style_lines.map(line => line.line)
-
-		// using this child node's (or these child nodes') style lines 
-		// and this child node's (or these child nodes') child nodes' lines,
-		// generate this child node's (or these child nodes') style JSON object
-		// (this is gonna be a recursion)
-		const style_json = parse_node_json(styles, children_lines)
+		// parse own CSS styles and recursively parse all child nodes
+		const style_json = parse_style_class(lines, names)
 
 		// generate style json for this child node (or child nodes)
 		return names.map(function(node_declaration)
@@ -249,12 +250,12 @@ function filter_lines_for_parsing(lines)
 // takes the whole lines array and splits it by its top-tier child nodes
 function split_lines_by_child_nodes(lines)
 {
-	// determine lines with indentation = 1 (child node entry lines)
+	// determine lines with indentation = 0 (child node entry lines)
 	const node_entry_lines = lines.map((line, index) => 
 	{
 		return { tabs: line.tabs, index }
 	})
-	.filter(line => line.tabs === 1)
+	.filter(line => line.tabs === 0)
 	.map(line => line.index)
 
 	// deduce corresponding child node ending lines
@@ -272,8 +273,8 @@ function split_lines_by_child_nodes(lines)
 // expand modifier style classes
 function expand_modifier_style_classes(node)
 {
-	const style          = get_node_style(node)
-	const pseudo_classes = get_node_pseudo_classes(node)
+	const style = get_node_style(node)
+	const pseudo_classes_and_media_queries = get_node_pseudo_classes_and_media_queries(node)
 
 	const modifiers = Object.keys(node)
 		// get all modifier style class nodes
@@ -286,7 +287,7 @@ function expand_modifier_style_classes(node)
 		// delete node[name]._is_a_modifier
 
 		// include parent node's styles and pseudo-classes into the modifier style class node
-		node[name] = extend({}, style, pseudo_classes, node[name])
+		node[name] = extend({}, style, pseudo_classes_and_media_queries, node[name])
 
 		// expand descendant style class nodes of this modifier
 		expand_modified_subtree(node, node[name])
@@ -328,19 +329,20 @@ function get_node_style(node)
 	{})
 }
 
-// extracts root pseudo-classes of this style class node
-function get_node_pseudo_classes(node)
+// extracts root pseudo-classes and media queries of this style class node
+function get_node_pseudo_classes_and_media_queries(node)
 {
 	return Object.keys(node)
-	// get all child style classes this style class node, which start with a colon and aren't modifiers
+	// get all child style classes this style class node, 
+	// which aren't modifiers and are a pseudoclass or a media query
 	.filter(property => typeof(node[property]) === 'object' 
-		&& is_a_pseudo_class(property)
+		&& (is_pseudo_class(property) || is_media_query(property))
 		&& !node[property]._is_a_modifier)
 	// for each child style class of this style class node
-	.reduce(function(pseudo_classes, name)
+	.reduce(function(pseudo_classes_and_media_queries, name)
 	{
-		pseudo_classes[name] = node[name]
-		return pseudo_classes
+		pseudo_classes_and_media_queries[name] = node[name]
+		return pseudo_classes_and_media_queries
 	}, 
 	{})
 }
@@ -355,8 +357,8 @@ function expand_modified_subtree(node, modified_node)
 {
 	// from the modified style class node
 	Object.keys(modified_node)
-	// for all non-pseudo-classes
-	.filter(name => !is_a_pseudo_class(name))
+	// for all non-pseudo-classes and non-media-queries
+	.filter(name => !is_pseudo_class(name) && !is_media_query(name))
 	// get all non-modifier style class nodes
 	.filter(name => typeof(modified_node[name]) === 'object' && !modified_node[name]._is_a_modifier)
 	// which are also present as non-modifier style classes
@@ -367,12 +369,13 @@ function expand_modified_subtree(node, modified_node)
 	.forEach(function(name)
 	{
 		// style of the original style class node
-		const style          = get_node_style(node[name])
+		const style = get_node_style(node[name])
+
 		// pseudo-classes of the original style class node
-		const pseudo_classes = get_node_pseudo_classes(node[name])
+		const pseudo_classes_and_media_queries = get_node_pseudo_classes_and_media_queries(node[name])
 
 		// mix in the styles
-		modified_node[name] = extend({}, style, pseudo_classes, modified_node[name])
+		modified_node[name] = extend({}, style, pseudo_classes_and_media_queries, modified_node[name])
 
 		// recurse
 		return expand_modified_subtree(node[name], modified_node[name])
@@ -380,7 +383,53 @@ function expand_modified_subtree(node, modified_node)
 }
 
 // checks if this style class name designates a pseudo-class
-function is_a_pseudo_class(name)
+export function is_pseudo_class(name)
 {
-	return starts_with(name, ':') || starts_with(name, '@')
+	return starts_with(name, ':')
+}
+
+// checks if this style class name is a media query (i.e. @media (...))
+export function is_media_query(name)
+{
+	return starts_with(name, '@')
+}
+
+// style class nesting validation
+function validate_child_style_class_types(parent_node_names, names)
+{
+	for (let parent of parent_node_names)
+	{
+		// if it's a pseudoclass, it can't contain any style classes
+		if (is_pseudo_class(parent) && not_empty(names))
+		{
+			throw new Error(`A style class declaration "${names[0]}" found inside a pseudoclass "${parent}" at line ${declaration_line.index}. Pseudoclasses (:hover, etc) can't contain child style classes.`)
+		}
+
+		// if it's a media query style class, it must contain only pseudoclasses
+		if (is_media_query(parent))
+		{
+			const non_pseudoclass = names.filter(x => !is_pseudo_class(x))[0]
+
+			if (non_pseudoclass)
+			{
+				throw new Error(`A non-pseudoclass "${non_pseudoclass}" found inside a media query style class "${parent}" at line ${declaration_line.index}. Media query style classes can only contain pseudoclasses (:hover, etc).`)
+			}
+		}
+	}
+}
+
+// parse CSS style class
+function parse_style_class(lines, node_names)
+{
+	// separate style lines from children lines
+	const { style_lines, children_lines } = split_into_style_lines_and_children_lines(lines)
+
+	// convert style lines info to just text lines
+	const styles = style_lines.map(line => line.line)
+
+	// using this child node's (or these child nodes') style lines 
+	// and this child node's (or these child nodes') child nodes' lines,
+	// generate this child node's (or these child nodes') style JSON object
+	// (this is gonna be a recursion)
+	return parse_node_json(styles, children_lines, node_names)
 }

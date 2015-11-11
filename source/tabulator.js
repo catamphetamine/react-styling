@@ -19,7 +19,7 @@ export default class Tabulator
 	{
 		const matches = line.match(this.tab.regexp)
 
-		if (!matches)
+		if (!matches || matches[0] === '')
 		{
 			return 0
 		}
@@ -76,7 +76,6 @@ export default class Tabulator
 		const minimum_indentation = lines
 			.reduce((minimum, line) => Math.min(minimum, line.tabs), Infinity)
 
-		/* istanbul ignore else: do nothing on else */
 		// if there is initial tabulation missing - add it
 		if (minimum_indentation === 0)
 		{
