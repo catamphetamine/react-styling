@@ -256,7 +256,7 @@ You can use both one-line comments and multiline comments.
 
 ### Nesting
 
-In the example above there's a nested tree of CSS style classes. You can flatten it if you like by using `import styler from 'react-styling/flat'` instead of the default `import styler from 'react-styling'`.
+In the example above the result is a JSON object with a nested tree of CSS style classes. You can flatten it if you like by using `import styler from 'react-styling/flat'` instead of the default `import styler from 'react-styling'`.
 
 The difference is that the flat styler will flatten the CSS style class tree by prefixing all the style class names accordingly. 
 
