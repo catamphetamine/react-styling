@@ -1,4 +1,4 @@
-import flat_styler from '../source/flat.js'
+import flat_styler from '../source/flat'
 
 import chai from 'chai'
 

@@ -58,14 +58,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _Object$keys = __webpack_require__(1)['default'];
 	
-	var _interopRequireDefault = __webpack_require__(8)['default'];
+	var _getIterator = __webpack_require__(8)['default'];
+	
+	var _interopRequireDefault = __webpack_require__(24)['default'];
 	
 	Object.defineProperty(exports, '__esModule', {
 		value: true
 	});
-	exports['default'] = styler;
+	exports.is_pseudo_class = is_pseudo_class;
+	exports.is_media_query = is_media_query;
 	
-	var _helpers = __webpack_require__(9);
+	var _helpers = __webpack_require__(25);
 	
 	var _tabulator = __webpack_require__(26);
 	
@@ -74,26 +77,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	// using ES6 template strings
 	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/template_strings
 	
-	function styler(strings) {
+	exports['default'] = function (strings) {
 		var style = '';
 	
 		// restore the whole string from "strings" and "values" parts
 		var i = 0;
 		while (i < strings.length) {
 			style += strings[i];
-	
-			for (var _len = arguments.length, values = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-				values[_key - 1] = arguments[_key];
-			}
-	
-			if ((0, _helpers.exists)(values[i])) {
-				style += values[i];
+			if ((0, _helpers.exists)(arguments[i + 1])) {
+				style += arguments[i + 1];
 			}
 			i++;
 		}
 	
 		return parse_style_json_object(style);
-	}
+	};
 	
 	// converts text to JSON object
 	function parse_style_json_object(text) {
@@ -110,14 +108,14 @@ return /******/ (function(modules) { // webpackBootstrap
 		var tabulator = new _tabulator2['default'](_tabulator2['default'].determine_tabulation(lines));
 	
 		// parse text into JSON object
-		var style_json = parse_node_json([], tabulator.extract_tabulation(lines));
+		var style_json = parse_style_class(tabulator.extract_tabulation(lines), []);
 	
 		// expand "modifier" style classes
 		return expand_modifier_style_classes(style_json);
 	}
 	
 	// parse child nodes' lines (and this node's styles) into this node's style JSON object
-	function parse_node_json(styles, children_lines) {
+	function parse_node_json(styles, children_lines, node_names) {
 		// transform this node's style lines from text to JSON properties and their values
 		var style_object = styles.map(function (style) {
 			var key = style.substring(0, style.indexOf(':')).trim();
@@ -150,21 +148,31 @@ return /******/ (function(modules) { // webpackBootstrap
 		}, {});
 	
 		// parse child nodes and add them to this node's JSON object
-		return (0, _helpers.extend)(style_object, parse_children(children_lines));
+		return (0, _helpers.extend)(style_object, parse_children(children_lines, node_names));
 	}
 	
 	// separates style lines from children lines
 	function split_into_style_lines_and_children_lines(lines) {
 		// get this node style lines
 		var style_lines = lines.filter(function (line) {
-			// styles always have indentation of 2
-			if (line.tabs !== 2) {
+			// styles always have indentation of 1
+			if (line.tabs !== 1) {
 				return false;
 			}
 	
 			// detect generic css style line (skip modifier classes and media queries)
 			var colon_index = line.line.indexOf(':');
-			return !(0, _helpers.starts_with)(line.line, '&') && !(0, _helpers.starts_with)(line.line, '@') && (colon_index > 0 && colon_index < line.line.length - 1);
+	
+			// is not a modifier class
+			return !(0, _helpers.starts_with)(line.line, '&')
+			// is not a media query style class name declaration
+			 && !(0, _helpers.starts_with)(line.line, '@')
+			// has a colon
+			 && colon_index >= 0
+			// is not a state class (e.g. :hover) name declaration
+			 && colon_index !== 0
+			// is not a yaml-style class name declaration
+			 && colon_index < line.line.length - 1;
 		});
 	
 		// get children nodes' lines
@@ -176,14 +184,6 @@ return /******/ (function(modules) { // webpackBootstrap
 		children_lines.forEach(function (line) {
 			return line.tabs--;
 		});
-	
-		// check for excessive indentation of children
-		if (children_lines.length > 0) {
-			var line = children_lines[0];
-			if (line.tabs !== 1) {
-				throw new Error('Excessive indentation at line ' + line.index + ': "' + line.original_line + '"');
-			}
-		}
 	
 		return { style_lines: style_lines, children_lines: children_lines };
 	}
@@ -204,8 +204,8 @@ return /******/ (function(modules) { // webpackBootstrap
 			name = name.substring('.'.length);
 		}
 	
-		// if someone forgot a trailing colon in the style class name - trim it
-		// (or maybe these are Python people)
+		// if there is a trailing colon in the style class name - trim it
+		// (Python people with yaml-alike syntax)
 		if ((0, _helpers.ends_with)(name, ':')) {
 			name = name.substring(0, name.length - ':'.length)
 			// throw new Error(`Remove the trailing colon at line: ${original_line}`)
@@ -216,7 +216,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	// parses child nodes' lines of text into the corresponding child node JSON objects
-	function parse_children(lines) {
+	function parse_children(lines, parent_node_names) {
 		// preprocess the lines (filter out comments, blank lines, etc)
 		lines = filter_lines_for_parsing(lines);
 	
@@ -228,30 +228,26 @@ return /******/ (function(modules) { // webpackBootstrap
 		// parse each child node's lines
 		return split_lines_by_child_nodes(lines).map(function (lines) {
 			// the first line is this child node's name (or names)
-			var declaration = lines.shift().line;
+			var declaration_line = lines.shift();
+	
+			// check for excessive indentation of the first child style class
+			if (declaration_line.tabs !== 0) {
+				throw new Error('Excessive indentation (' + declaration_line.tabs + ' more "tabs" than needed) at line ' + declaration_line.index + ': "' + declaration_line.original_line + '"');
+			}
+	
+			// style class name declaration
+			var declaration = declaration_line.line;
 	
 			// child nodes' names
 			var names = declaration.split(',').map(function (name) {
 				return name.trim();
 			});
 	
-			// separate style lines from children lines
+			// style class nesting validation
+			validate_child_style_class_types(parent_node_names, names);
 	
-			var _split_into_style_lines_and_children_lines = split_into_style_lines_and_children_lines(lines);
-	
-			var style_lines = _split_into_style_lines_and_children_lines.style_lines;
-			var children_lines = _split_into_style_lines_and_children_lines.children_lines;
-	
-			// convert style lines info to just text lines
-			var styles = style_lines.map(function (line) {
-				return line.line;
-			});
-	
-			// using this child node's (or these child nodes') style lines
-			// and this child node's (or these child nodes') child nodes' lines,
-			// generate this child node's (or these child nodes') style JSON object
-			// (this is gonna be a recursion)
-			var style_json = parse_node_json(styles, children_lines);
+			// parse own CSS styles and recursively parse all child nodes
+			var style_json = parse_style_class(lines, names);
 	
 			// generate style json for this child node (or child nodes)
 			return names.map(function (node_declaration) {
@@ -310,11 +306,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	// takes the whole lines array and splits it by its top-tier child nodes
 	function split_lines_by_child_nodes(lines) {
-		// determine lines with indentation = 1 (child node entry lines)
+		// determine lines with indentation = 0 (child node entry lines)
 		var node_entry_lines = lines.map(function (line, index) {
 			return { tabs: line.tabs, index: index };
 		}).filter(function (line) {
-			return line.tabs === 1;
+			return line.tabs === 0;
 		}).map(function (line) {
 			return line.index;
 		});
@@ -338,7 +334,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// expand modifier style classes
 	function expand_modifier_style_classes(node) {
 		var style = get_node_style(node);
-		var pseudo_classes = get_node_pseudo_classes(node);
+		var pseudo_classes_and_media_queries = get_node_pseudo_classes_and_media_queries(node);
 	
 		var modifiers = _Object$keys(node)
 		// get all modifier style class nodes
@@ -352,7 +348,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			// delete node[name]._is_a_modifier
 	
 			// include parent node's styles and pseudo-classes into the modifier style class node
-			node[name] = (0, _helpers.extend)({}, style, pseudo_classes, node[name]);
+			node[name] = (0, _helpers.extend)({}, style, pseudo_classes_and_media_queries, node[name]);
 	
 			// expand descendant style class nodes of this modifier
 			expand_modified_subtree(node, node[name]);
@@ -393,17 +389,18 @@ return /******/ (function(modules) { // webpackBootstrap
 		}, {});
 	}
 	
-	// extracts root pseudo-classes of this style class node
-	function get_node_pseudo_classes(node) {
+	// extracts root pseudo-classes and media queries of this style class node
+	function get_node_pseudo_classes_and_media_queries(node) {
 		return _Object$keys(node)
-		// get all child style classes this style class node, which start with a colon and aren't modifiers
+		// get all child style classes this style class node,
+		// which aren't modifiers and are a pseudoclass or a media query
 		.filter(function (property) {
-			return typeof node[property] === 'object' && is_a_pseudo_class(property) && !node[property]._is_a_modifier;
+			return typeof node[property] === 'object' && (is_pseudo_class(property) || is_media_query(property)) && !node[property]._is_a_modifier;
 		})
 		// for each child style class of this style class node
-		.reduce(function (pseudo_classes, name) {
-			pseudo_classes[name] = node[name];
-			return pseudo_classes;
+		.reduce(function (pseudo_classes_and_media_queries, name) {
+			pseudo_classes_and_media_queries[name] = node[name];
+			return pseudo_classes_and_media_queries;
 		}, {});
 	}
 	
@@ -416,9 +413,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	function expand_modified_subtree(node, modified_node) {
 		// from the modified style class node
 		_Object$keys(modified_node)
-		// for all non-pseudo-classes
+		// for all non-pseudo-classes and non-media-queries
 		.filter(function (name) {
-			return !is_a_pseudo_class(name);
+			return !is_pseudo_class(name) && !is_media_query(name);
 		})
 		// get all non-modifier style class nodes
 		.filter(function (name) {
@@ -434,11 +431,12 @@ return /******/ (function(modules) { // webpackBootstrap
 		.forEach(function (name) {
 			// style of the original style class node
 			var style = get_node_style(node[name]);
+	
 			// pseudo-classes of the original style class node
-			var pseudo_classes = get_node_pseudo_classes(node[name]);
+			var pseudo_classes_and_media_queries = get_node_pseudo_classes_and_media_queries(node[name]);
 	
 			// mix in the styles
-			modified_node[name] = (0, _helpers.extend)({}, style, pseudo_classes, modified_node[name]);
+			modified_node[name] = (0, _helpers.extend)({}, style, pseudo_classes_and_media_queries, modified_node[name]);
 	
 			// recurse
 			return expand_modified_subtree(node[name], modified_node[name]);
@@ -446,10 +444,79 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 	
 	// checks if this style class name designates a pseudo-class
-	function is_a_pseudo_class(name) {
-		return (0, _helpers.starts_with)(name, ':') || (0, _helpers.starts_with)(name, '@');
+	
+	function is_pseudo_class(name) {
+		return (0, _helpers.starts_with)(name, ':');
 	}
-	module.exports = exports['default'];
+	
+	// checks if this style class name is a media query (i.e. @media (...))
+	
+	function is_media_query(name) {
+		return (0, _helpers.starts_with)(name, '@');
+	}
+	
+	// style class nesting validation
+	function validate_child_style_class_types(parent_node_names, names) {
+		var _iteratorNormalCompletion = true;
+		var _didIteratorError = false;
+		var _iteratorError = undefined;
+	
+		try {
+			for (var _iterator = _getIterator(parent_node_names), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+				var _parent = _step.value;
+	
+				// if it's a pseudoclass, it can't contain any style classes
+				if (is_pseudo_class(_parent) && (0, _helpers.not_empty)(names)) {
+					throw new Error('A style class declaration "' + names[0] + '" found inside a pseudoclass "' + _parent + '". Pseudoclasses (:hover, etc) can\'t contain child style classes.');
+				}
+	
+				// if it's a media query style class, it must contain only pseudoclasses
+				if (is_media_query(_parent)) {
+					var non_pseudoclass = names.filter(function (x) {
+						return !is_pseudo_class(x);
+					})[0];
+	
+					if (non_pseudoclass) {
+						throw new Error('A non-pseudoclass "' + non_pseudoclass + '" found inside a media query style class "' + _parent + '". Media query style classes can only contain pseudoclasses (:hover, etc).');
+					}
+				}
+			}
+		} catch (err) {
+			_didIteratorError = true;
+			_iteratorError = err;
+		} finally {
+			try {
+				if (!_iteratorNormalCompletion && _iterator['return']) {
+					_iterator['return']();
+				}
+			} finally {
+				if (_didIteratorError) {
+					throw _iteratorError;
+				}
+			}
+		}
+	}
+	
+	// parse CSS style class
+	function parse_style_class(lines, node_names) {
+		// separate style lines from children lines
+	
+		var _split_into_style_lines_and_children_lines = split_into_style_lines_and_children_lines(lines);
+	
+		var style_lines = _split_into_style_lines_and_children_lines.style_lines;
+		var children_lines = _split_into_style_lines_and_children_lines.children_lines;
+	
+		// convert style lines info to just text lines
+		var styles = style_lines.map(function (line) {
+			return line.line;
+		});
+	
+		// using this child node's (or these child nodes') style lines
+		// and this child node's (or these child nodes') child nodes' lines,
+		// generate this child node's (or these child nodes') style JSON object
+		// (this is gonna be a recursion)
+		return parse_node_json(styles, children_lines, node_names);
+	}
 
 /***/ },
 /* 1 */
@@ -696,169 +763,27 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 8 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
-	
-	exports["default"] = function (obj) {
-	  return obj && obj.__esModule ? obj : {
-	    "default": obj
-	  };
-	};
-	
-	exports.__esModule = true;
+	module.exports = { "default": __webpack_require__(9), __esModule: true };
 
 /***/ },
 /* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
-	// if the variable is defined
-	'use strict';
-	
-	var _getIterator = __webpack_require__(10)['default'];
-	
-	var _Object$keys = __webpack_require__(1)['default'];
-	
-	Object.defineProperty(exports, '__esModule', {
-		value: true
-	});
-	exports.starts_with = starts_with;
-	exports.ends_with = ends_with;
-	exports.repeat = repeat;
-	exports.is_blank = is_blank;
-	exports.zip = zip;
-	exports.extend = extend;
-	var exists = function exists(what) {
-		return typeof what !== 'undefined';
-	};
-	
-	exports.exists = exists;
-	// if the string starts with the substring
-	
-	function starts_with(string, what) {
-		return string.indexOf(what) === 0;
-	}
-	
-	// if the string ends with the substring
-	
-	function ends_with(string, what) {
-		var index = string.lastIndexOf(what);
-		if (index < 0) {
-			return;
-		}
-		return index === string.length - what.length;
-	}
-	
-	// repeat string N times
-	
-	function repeat(what, times) {
-		var result = '';
-		while (times > 0) {
-			result += what;
-			times--;
-		}
-		return result;
-	}
-	
-	// if the text is blank
-	
-	function is_blank(text) {
-		return !exists(text) || !text.replace(/\s/g, '');
-	}
-	
-	// zips two arrays
-	
-	function zip(a, b) {
-		return a.map(function (_, index) {
-			return [a[index], b[index]];
-		});
-	}
-	
-	// extends the first object with
-	/* istanbul ignore next: some weird transpiled code, not testable */
-	
-	function extend() {
-		var _this = this,
-		    _arguments = arguments;
-	
-		var _again = true;
-	
-		_function: while (_again) {
-			_len = objects = _key = to = from = last = intermediary_result = _iteratorNormalCompletion = _didIteratorError = _iteratorError = undefined;
-			_again = false;
-	
-			for (var _len = _arguments.length, objects = Array(_len), _key = 0; _key < _len; _key++) {
-				objects[_key] = _arguments[_key];
-			}
-	
-			var to = objects[0];
-			var from = objects[1];
-	
-			if (objects.length > 2) {
-				var last = objects.pop();
-				var intermediary_result = extend.apply(_this, objects);
-				_this = undefined;
-				_arguments = [intermediary_result, last];
-				_again = true;
-				continue _function;
-			}
-	
-			var _iteratorNormalCompletion = true;
-			var _didIteratorError = false;
-			var _iteratorError = undefined;
-	
-			try {
-				for (var _iterator = _getIterator(_Object$keys(from)), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-					var key = _step.value;
-	
-					if (typeof from[key] === 'object' && exists(to[key])) {
-						to[key] = extend(to[key], from[key]);
-					} else {
-						to[key] = from[key];
-					}
-				}
-			} catch (err) {
-				_didIteratorError = true;
-				_iteratorError = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion && _iterator['return']) {
-						_iterator['return']();
-					}
-				} finally {
-					if (_didIteratorError) {
-						throw _iteratorError;
-					}
-				}
-			}
-	
-			return to;
-		}
-	}
+	__webpack_require__(10);
+	__webpack_require__(21);
+	__webpack_require__(23);
+	module.exports = __webpack_require__(4).core.getIterator;
 
 /***/ },
 /* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = { "default": __webpack_require__(11), __esModule: true };
-
-/***/ },
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
-
-	__webpack_require__(12);
-	__webpack_require__(23);
-	__webpack_require__(25);
-	module.exports = __webpack_require__(4).core.getIterator;
-
-/***/ },
-/* 12 */
-/***/ function(module, exports, __webpack_require__) {
-
-	__webpack_require__(13);
+	__webpack_require__(11);
 	var $           = __webpack_require__(4)
-	  , Iterators   = __webpack_require__(16).Iterators
-	  , ITERATOR    = __webpack_require__(18)('iterator')
+	  , Iterators   = __webpack_require__(14).Iterators
+	  , ITERATOR    = __webpack_require__(16)('iterator')
 	  , ArrayValues = Iterators.Array
 	  , NL          = $.g.NodeList
 	  , HTC         = $.g.HTMLCollection
@@ -871,13 +796,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	Iterators.NodeList = Iterators.HTMLCollection = ArrayValues;
 
 /***/ },
-/* 13 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var $          = __webpack_require__(4)
-	  , setUnscope = __webpack_require__(14)
-	  , ITER       = __webpack_require__(15).safe('iter')
-	  , $iter      = __webpack_require__(16)
+	  , setUnscope = __webpack_require__(12)
+	  , ITER       = __webpack_require__(13).safe('iter')
+	  , $iter      = __webpack_require__(14)
 	  , step       = $iter.step
 	  , Iterators  = $iter.Iterators;
 	
@@ -885,7 +810,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// 22.1.3.13 Array.prototype.keys()
 	// 22.1.3.29 Array.prototype.values()
 	// 22.1.3.30 Array.prototype[@@iterator]()
-	__webpack_require__(21)(Array, 'Array', function(iterated, kind){
+	__webpack_require__(19)(Array, 'Array', function(iterated, kind){
 	  $.set(this, ITER, {o: $.toObject(iterated), i: 0, k: kind});
 	// 22.1.5.2.1 %ArrayIteratorPrototype%.next()
 	}, function(){
@@ -910,13 +835,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	setUnscope('entries');
 
 /***/ },
-/* 14 */
+/* 12 */
 /***/ function(module, exports) {
 
 	module.exports = function(){ /* empty */ };
 
 /***/ },
-/* 15 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var sid = 0;
@@ -927,18 +852,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = uid;
 
 /***/ },
-/* 16 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	var $                 = __webpack_require__(4)
-	  , cof               = __webpack_require__(17)
+	  , cof               = __webpack_require__(15)
 	  , classof           = cof.classof
-	  , assert            = __webpack_require__(20)
+	  , assert            = __webpack_require__(18)
 	  , assertObject      = assert.obj
-	  , SYMBOL_ITERATOR   = __webpack_require__(18)('iterator')
+	  , SYMBOL_ITERATOR   = __webpack_require__(16)('iterator')
 	  , FF_ITERATOR       = '@@iterator'
-	  , Iterators         = __webpack_require__(19)('iterators')
+	  , Iterators         = __webpack_require__(17)('iterators')
 	  , IteratorPrototype = {};
 	// 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
 	setIterator(IteratorPrototype, $.that);
@@ -981,11 +906,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 17 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var $        = __webpack_require__(4)
-	  , TAG      = __webpack_require__(18)('toStringTag')
+	  , TAG      = __webpack_require__(16)('toStringTag')
 	  , toString = {}.toString;
 	function cof(it){
 	  return toString.call(it).slice(8, -1);
@@ -1001,18 +926,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = cof;
 
 /***/ },
-/* 18 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var global = __webpack_require__(4).g
-	  , store  = __webpack_require__(19)('wks');
+	  , store  = __webpack_require__(17)('wks');
 	module.exports = function(name){
 	  return store[name] || (store[name] =
-	    global.Symbol && global.Symbol[name] || __webpack_require__(15).safe('Symbol.' + name));
+	    global.Symbol && global.Symbol[name] || __webpack_require__(13).safe('Symbol.' + name));
 	};
 
 /***/ },
-/* 19 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var $      = __webpack_require__(4)
@@ -1023,7 +948,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 20 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var $ = __webpack_require__(4);
@@ -1046,15 +971,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = assert;
 
 /***/ },
-/* 21 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var $def            = __webpack_require__(6)
-	  , $redef          = __webpack_require__(22)
+	  , $redef          = __webpack_require__(20)
 	  , $               = __webpack_require__(4)
-	  , cof             = __webpack_require__(17)
-	  , $iter           = __webpack_require__(16)
-	  , SYMBOL_ITERATOR = __webpack_require__(18)('iterator')
+	  , cof             = __webpack_require__(15)
+	  , $iter           = __webpack_require__(14)
+	  , SYMBOL_ITERATOR = __webpack_require__(16)('iterator')
 	  , FF_ITERATOR     = '@@iterator'
 	  , KEYS            = 'keys'
 	  , VALUES          = 'values'
@@ -1101,23 +1026,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 22 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__(4).hide;
 
 /***/ },
-/* 23 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var set   = __webpack_require__(4).set
-	  , $at   = __webpack_require__(24)(true)
-	  , ITER  = __webpack_require__(15).safe('iter')
-	  , $iter = __webpack_require__(16)
+	  , $at   = __webpack_require__(22)(true)
+	  , ITER  = __webpack_require__(13).safe('iter')
+	  , $iter = __webpack_require__(14)
 	  , step  = $iter.step;
 	
 	// 21.1.3.27 String.prototype[@@iterator]()
-	__webpack_require__(21)(String, 'String', function(iterated){
+	__webpack_require__(19)(String, 'String', function(iterated){
 	  set(this, ITER, {o: String(iterated), i: 0});
 	// 21.1.5.2.1 %StringIteratorPrototype%.next()
 	}, function(){
@@ -1132,7 +1057,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 
 /***/ },
-/* 24 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// true  -> String#at
@@ -1154,13 +1079,249 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 25 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var core  = __webpack_require__(4).core
-	  , $iter = __webpack_require__(16);
+	  , $iter = __webpack_require__(14);
 	core.isIterable  = $iter.is;
 	core.getIterator = $iter.get;
+
+/***/ },
+/* 24 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	exports["default"] = function (obj) {
+	  return obj && obj.__esModule ? obj : {
+	    "default": obj
+	  };
+	};
+	
+	exports.__esModule = true;
+
+/***/ },
+/* 25 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// // if the variable is defined
+	'use strict';
+	
+	var _getIterator = __webpack_require__(8)['default'];
+	
+	var _Object$keys = __webpack_require__(1)['default'];
+	
+	Object.defineProperty(exports, '__esModule', {
+		value: true
+	});
+	exports.is_object = is_object;
+	exports.extend = extend;
+	exports.merge = merge;
+	exports.clone = clone;
+	exports.convert_from_camel_case = convert_from_camel_case;
+	exports.replace_all = replace_all;
+	exports.starts_with = starts_with;
+	exports.ends_with = ends_with;
+	exports.is_empty = is_empty;
+	exports.not_empty = not_empty;
+	exports.repeat = repeat;
+	exports.is_blank = is_blank;
+	exports.zip = zip;
+	var exists = function exists(what) {
+		return typeof what !== 'undefined';
+	};
+	
+	exports.exists = exists;
+	// used for JSON object type checking
+	var object_constructor = ({}).constructor;
+	
+	// detects a JSON object
+	
+	function is_object(object) {
+		return exists(object) && object !== null && object.constructor === object_constructor;
+	}
+	
+	// extends the first object with
+	/* istanbul ignore next: some weird transpiled code, not testable */
+	
+	function extend() {
+		var _this = this,
+		    _arguments = arguments;
+	
+		var _again = true;
+	
+		_function: while (_again) {
+			_len = objects = _key = to = from = last = intermediary_result = _iteratorNormalCompletion = _didIteratorError = _iteratorError = undefined;
+			_again = false;
+	
+			for (var _len = _arguments.length, objects = Array(_len), _key = 0; _key < _len; _key++) {
+				objects[_key] = _arguments[_key];
+			}
+	
+			var to = objects[0];
+			var from = objects[1];
+	
+			if (objects.length > 2) {
+				var last = objects.pop();
+				var intermediary_result = extend.apply(_this, objects);
+				_this = undefined;
+				_arguments = [intermediary_result, last];
+				_again = true;
+				continue _function;
+			}
+	
+			var _iteratorNormalCompletion = true;
+			var _didIteratorError = false;
+			var _iteratorError = undefined;
+	
+			try {
+				for (var _iterator = _getIterator(_Object$keys(from)), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+					var key = _step.value;
+	
+					if (is_object(from[key])) {
+						if (!is_object(to[key])) {
+							to[key] = {};
+						}
+	
+						extend(to[key], from[key]);
+					} else {
+						to[key] = from[key];
+					}
+				}
+			} catch (err) {
+				_didIteratorError = true;
+				_iteratorError = err;
+			} finally {
+				try {
+					if (!_iteratorNormalCompletion && _iterator['return']) {
+						_iterator['return']();
+					}
+				} finally {
+					if (_didIteratorError) {
+						throw _iteratorError;
+					}
+				}
+			}
+	
+			return to;
+		}
+	}
+	
+	function merge() {
+		var parameters = Array.prototype.slice.call(arguments, 0);
+		parameters.unshift({});
+		return extend.apply(this, parameters);
+	}
+	
+	function clone(object) {
+		return merge({}, object);
+	}
+	
+	// creates camelCased aliases for all the keys of an object
+	
+	function convert_from_camel_case(object) {
+		var _iteratorNormalCompletion2 = true;
+		var _didIteratorError2 = false;
+		var _iteratorError2 = undefined;
+	
+		try {
+			for (var _iterator2 = _getIterator(_Object$keys(object)), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+				var key = _step2.value;
+	
+				if (/[A-Z]/.test(key))
+					// if (key.indexOf('_') >= 0)
+					{
+						// const camel_cased_key = key.replace(/_(.)/g, function(match, group_1)
+						// {
+						// 	return group_1.toUpperCase()
+						// })
+	
+						// if (!exists(object[camel_cased_key]))
+						// {
+						// 	object[camel_cased_key] = object[key]
+						// 	delete object[key]
+						// }
+	
+						var lo_dashed_key = key.replace(/([A-Z])/g, function (match, group_1) {
+							return '_' + group_1.toLowerCase();
+						});
+	
+						if (!exists(object[lo_dashed_key])) {
+							object[lo_dashed_key] = object[key];
+							delete object[key];
+						}
+					}
+			}
+		} catch (err) {
+			_didIteratorError2 = true;
+			_iteratorError2 = err;
+		} finally {
+			try {
+				if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+					_iterator2['return']();
+				}
+			} finally {
+				if (_didIteratorError2) {
+					throw _iteratorError2;
+				}
+			}
+		}
+	
+		return object;
+	}
+	
+	function escape_regexp(string) {
+		var specials = new RegExp('[.*+?|()\\[\\]{}\\\\]', 'g');
+		return string.replace(specials, '\\$&');
+	}
+	
+	function replace_all(where, what, with_what) {
+		var regexp = new RegExp(escape_regexp(what), 'g');
+		return where.replace(regexp, with_what);
+	}
+	
+	function starts_with(string, substring) {
+		return string.indexOf(substring) === 0;
+	}
+	
+	function ends_with(string, substring) {
+		var index = string.lastIndexOf(substring);
+		return index >= 0 && index === string.length - substring.length;
+	}
+	
+	function is_empty(array) {
+		return array.length === 0;
+	}
+	
+	function not_empty(array) {
+		return array.length > 0;
+	}
+	
+	// repeat string N times
+	
+	function repeat(what, times) {
+		var result = '';
+		while (times > 0) {
+			result += what;
+			times--;
+		}
+		return result;
+	}
+	
+	// if the text is blank
+	
+	function is_blank(text) {
+		return !exists(text) || !text.replace(/\s/g, '');
+	}
+	
+	// zips two arrays
+	
+	function zip(a, b) {
+		return a.map(function (_, index) {
+			return [a[index], b[index]];
+		});
+	}
 
 /***/ },
 /* 26 */
@@ -1176,7 +1337,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		value: true
 	});
 	
-	var _helpers = __webpack_require__(9);
+	var _helpers = __webpack_require__(25);
 	
 	// tabulation utilities
 	
@@ -1201,7 +1362,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			value: function calculate_indentation(line) {
 				var matches = line.match(this.tab.regexp);
 	
-				if (!matches) {
+				if (!matches || matches[0] === '') {
 					return 0;
 				}
 	
@@ -1255,7 +1416,6 @@ return /******/ (function(modules) { // webpackBootstrap
 					return Math.min(minimum, line.tabs);
 				}, Infinity);
 	
-				/* istanbul ignore else: do nothing on else */
 				// if there is initial tabulation missing - add it
 				if (minimum_indentation === 0) {
 					lines.forEach(function (line) {
