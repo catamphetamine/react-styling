@@ -103,7 +103,9 @@ function split_into_style_lines_and_children_lines(lines)
 		// is not a modifier class
 		return !starts_with(line.line, '&') 
 			// is not a media query style class name declaration
-			&& !starts_with(line.line, '@') 
+			&& !starts_with(line.line, '@media') 
+			// is not a keyframes style class name declaration
+			&& !starts_with(line.line, '@keyframes') 
 			// has a colon
 			&& colon_index >= 0 
 			// is not a state class (e.g. :hover) name declaration
@@ -274,7 +276,7 @@ function split_lines_by_child_nodes(lines)
 function expand_modifier_style_classes(node)
 {
 	const style = get_node_style(node)
-	const pseudo_classes_and_media_queries = get_node_pseudo_classes_and_media_queries(node)
+	const pseudo_classes_and_media_queries_and_keyframes = get_node_pseudo_classes_and_media_queries_and_keyframes(node)
 
 	const modifiers = Object.keys(node)
 		// get all modifier style class nodes
@@ -287,7 +289,7 @@ function expand_modifier_style_classes(node)
 		// delete node[name]._is_a_modifier
 
 		// include parent node's styles and pseudo-classes into the modifier style class node
-		node[name] = extend({}, style, pseudo_classes_and_media_queries, node[name])
+		node[name] = extend({}, style, pseudo_classes_and_media_queries_and_keyframes, node[name])
 
 		// expand descendant style class nodes of this modifier
 		expand_modified_subtree(node, node[name])
@@ -330,19 +332,19 @@ function get_node_style(node)
 }
 
 // extracts root pseudo-classes and media queries of this style class node
-function get_node_pseudo_classes_and_media_queries(node)
+function get_node_pseudo_classes_and_media_queries_and_keyframes(node)
 {
 	return Object.keys(node)
 	// get all child style classes this style class node, 
-	// which aren't modifiers and are a pseudoclass or a media query
+	// which aren't modifiers and are a pseudoclass or a media query or keyframes
 	.filter(property => typeof(node[property]) === 'object' 
-		&& (is_pseudo_class(property) || is_media_query(property))
+		&& (is_pseudo_class(property) || is_media_query(property) || is_keyframes(property))
 		&& !node[property]._is_a_modifier)
 	// for each child style class of this style class node
-	.reduce(function(pseudo_classes_and_media_queries, name)
+	.reduce(function(pseudo_classes_and_media_queries_and_keyframes, name)
 	{
-		pseudo_classes_and_media_queries[name] = node[name]
-		return pseudo_classes_and_media_queries
+		pseudo_classes_and_media_queries_and_keyframes[name] = node[name]
+		return pseudo_classes_and_media_queries_and_keyframes
 	}, 
 	{})
 }
@@ -358,7 +360,7 @@ function expand_modified_subtree(node, modified_node)
 	// from the modified style class node
 	Object.keys(modified_node)
 	// for all non-pseudo-classes and non-media-queries
-	.filter(name => !is_pseudo_class(name) && !is_media_query(name))
+	.filter(name => !is_pseudo_class(name) && !is_media_query(name) && !is_keyframes(name))
 	// get all non-modifier style class nodes
 	.filter(name => typeof(modified_node[name]) === 'object' && !modified_node[name]._is_a_modifier)
 	// which are also present as non-modifier style classes
@@ -372,10 +374,10 @@ function expand_modified_subtree(node, modified_node)
 		const style = get_node_style(node[name])
 
 		// pseudo-classes of the original style class node
-		const pseudo_classes_and_media_queries = get_node_pseudo_classes_and_media_queries(node[name])
+		const pseudo_classes_and_media_queries_and_keyframes = get_node_pseudo_classes_and_media_queries_and_keyframes(node[name])
 
 		// mix in the styles
-		modified_node[name] = extend({}, style, pseudo_classes_and_media_queries, modified_node[name])
+		modified_node[name] = extend({}, style, pseudo_classes_and_media_queries_and_keyframes, modified_node[name])
 
 		// recurse
 		return expand_modified_subtree(node[name], modified_node[name])
@@ -391,7 +393,19 @@ export function is_pseudo_class(name)
 // checks if this style class name is a media query (i.e. @media (...))
 export function is_media_query(name)
 {
-	return starts_with(name, '@')
+	return starts_with(name, '@media')
+}
+
+export function is_keyframe_selector(name) 
+{
+	return ends_with(name, '%') || (name === 'from') || (name === 'to');
+}
+
+
+// checks if this style class name is a media query (i.e. @media (...))
+export function is_keyframes(name)
+{
+	return starts_with(name, '@keyframes')
 }
 
 // style class nesting validation
@@ -413,6 +427,16 @@ function validate_child_style_class_types(parent_node_names, names)
 			if (non_pseudoclass)
 			{
 				throw new Error(`A non-pseudoclass "${non_pseudoclass}" found inside a media query style class "${parent}". Media query style classes can only contain pseudoclasses (:hover, etc).`)
+			}
+		}
+		
+		// if it's a keyframes style class, it must contain only keyframe selectors
+		if (is_keyframes(parent)) {
+			const non_keyframe_selector = names.filter(x => !is_keyframe_selector(x))[0]
+
+			if (non_keyframe_selector) 
+			{
+				throw new Error(`A non-keyframe-selector "${non_keyframe_selector}" found inside a keyframes style class "${parent}". Keyframes style classes can only contain keyframe selectors (from, 100%, etc).`);
 			}
 		}
 	}

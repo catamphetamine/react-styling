@@ -23,6 +23,7 @@ describe('styler', function()
 				@media
 					:active
 		`)
+		.should.not.throw('good function')
 
 		style_function
 		(`
@@ -31,6 +32,23 @@ describe('styler', function()
 					passive
 		`)
 		.should.throw('Media query style classes can only contain pseudoclasses (:hover, etc)')
+		
+		style_function
+		(`
+			menu
+				@keyframes
+					10%
+		`)
+		.should.not.throw('good function')
+
+		style_function
+		(`
+			menu
+				@keyframes
+					whatever
+		`)
+		.should.throw('Keyframes style classes can only contain keyframe selectors (from, 100%, etc)')
+		
 	})
 
 	it('should convert text to JSON object', function()
@@ -67,6 +85,12 @@ describe('styler', function()
 								:hover 
 									background: white
 									whatever: 1.3
+
+							@keyframes test
+								0% 
+									padding: 0px
+								100%
+									padding: 10px
 		`
 
 		const object =
@@ -110,6 +134,18 @@ describe('styler', function()
 								{
 									background: 'white',
 									whatever: 1.3
+								}
+							},
+							
+							'@keyframes test': 
+							{
+								'0%': 
+								{
+									padding: '0px'
+								},
+								'100%': 
+								{
+									padding: '10px'
 								}
 							}
 						}
