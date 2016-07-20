@@ -6,7 +6,6 @@
 var path = require('path')
 
 var webpack = require('webpack')
-var HtmlWebpackPlugin = require('html-webpack-plugin')
 var merge = require('webpack-merge')
 var minimist = require('minimist')
 
@@ -26,7 +25,7 @@ if (!action)
 var Root_folder = path.resolve(__dirname)
 var Demo_folder = 'demo'
 
-var babel = 'babel?optional[]=runtime&stage=0'
+var babel = 'babel'
 
 var config = 
 {
@@ -113,6 +112,8 @@ switch (action)
 		var IP = '0.0.0.0'
 		var PORT = 3000
 
+		var HtmlWebpackPlugin = require('html-webpack-plugin')
+
 		module.exports = merge_demo
 		({
 			ip: IP,
@@ -168,6 +169,8 @@ switch (action)
 
     // Generates a github pages website
 	case 'gh-pages':
+		var HtmlWebpackPlugin = require('html-webpack-plugin')
+
 		module.exports = merge_demo
 		({
 			entry: 
