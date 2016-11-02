@@ -141,11 +141,17 @@ describe('styler', function()
 							{
 								'0%': 
 								{
-									padding: '0px'
+									paddingTop    : '0px',
+									paddingRight  : '0px',
+									paddingBottom : '0px',
+									paddingLeft   : '0px'
 								},
 								'100%': 
 								{
-									padding: '10px'
+									paddingTop    : '10px',
+									paddingRight  : '10px',
+									paddingBottom : '10px',
+									paddingLeft   : '10px'
 								}
 							}
 						}
@@ -561,14 +567,29 @@ menu
 
 				modifier:
 				{
-					boxSizing: 'border-box',
-					borderWidth: '1px'
+					boxSizing         : 'border-box',
+					borderTopWidth    : '1px',
+					borderRightWidth  : '1px',
+					borderBottomWidth : '1px',
+					borderLeftWidth   : '1px'
 				}
 			},
 
 			blah:
 			{
-				border: 'none',
+				borderBottomColor : 'initial',
+				borderBottomStyle : 'none',
+				borderBottomWidth : 'initial',
+				borderLeftColor   : 'initial',
+				borderLeftStyle   : 'none',
+				borderLeftWidth   : 'initial',
+				borderRightColor  : 'initial',
+				borderRightStyle  : 'none',
+				borderRightWidth  : 'initial',
+				borderTopColor    : 'initial',
+				borderTopStyle    : 'none',
+				borderTopWidth    : 'initial',
+
 				color: 'white',
 
 				nested:
@@ -624,12 +645,26 @@ menu
 
 				droid:
 				{
-					borderColor : 'black',
-					borderStyle : 'solid',
-					borderWidth : '1px 1px 0 1px',
+					borderBottomColor : 'black',
+					borderBottomStyle : 'solid',
+					borderBottomWidth : '0',
+					borderLeftColor   : 'black',
+					borderLeftStyle   : 'solid',
+					borderLeftWidth   : '1px',
+					borderRightColor  : 'black',
+					borderRightStyle  : 'solid',
+					borderRightWidth  : '1px',
+					borderTopColor    : 'black',
+					borderTopStyle    : 'solid',
+					borderTopWidth    : '1px',
+
+					paddingLeft   : '12px',
+					paddingRight  : '12px',
+					paddingTop    : '12px',
+					paddingBottom : '12px',
+
 					cursor      : 'pointer',
 					listStyle   : 'none',
-					padding     : '12px',
 
 					':hover':
 					{
@@ -643,12 +678,26 @@ menu
 
 					'@non-media-query-test':
 					{
-						borderColor : 'black',
-						borderStyle : 'solid',
-						borderWidth : '1px 1px 0 1px',
+						borderBottomColor : 'black',
+						borderBottomStyle : 'solid',
+						borderBottomWidth : '0',
+						borderLeftColor   : 'black',
+						borderLeftStyle   : 'solid',
+						borderLeftWidth   : '1px',
+						borderRightColor  : 'black',
+						borderRightStyle  : 'solid',
+						borderRightWidth  : '1px',
+						borderTopColor    : 'black',
+						borderTopStyle    : 'solid',
+						borderTopWidth    : '1px',
+
+						paddingLeft   : '12px',
+						paddingRight  : '12px',
+						paddingTop    : '12px',
+						paddingBottom : '12px',
+
 						cursor      : 'pointer',
 						listStyle   : 'none',
-						padding     : '12px',
 
 						background : 'black',
 
@@ -665,12 +714,26 @@ menu
 
 					':this_class_wont_be_copied_into_modifiers_because_it_is_itself_a_modifier':
 					{
-						borderColor : 'black',
-						borderStyle : 'solid',
-						borderWidth : '1px 1px 0 1px',
+						borderBottomColor : 'black',
+						borderBottomStyle : 'solid',
+						borderBottomWidth : '0',
+						borderLeftColor   : 'black',
+						borderLeftStyle   : 'solid',
+						borderLeftWidth   : '1px',
+						borderRightColor  : 'black',
+						borderRightStyle  : 'solid',
+						borderRightWidth  : '1px',
+						borderTopColor    : 'black',
+						borderTopStyle    : 'solid',
+						borderTopWidth    : '1px',
+
 						cursor      : 'pointer',
 						listStyle   : 'none',
-						padding     : '12px',
+
+						paddingLeft   : '12px',
+						paddingRight  : '12px',
+						paddingTop    : '12px',
+						paddingBottom : '12px',
 
 						background : 'transparent',
 
@@ -687,14 +750,30 @@ menu
 
 					':first':
 					{
-						borderColor : 'black',
-						borderStyle : 'solid',
-						borderWidth : '1px 1px 0 1px',
+						borderBottomColor       : 'black',
+						borderBottomLeftRadius  : '0',
+						borderBottomRightRadius : '0',
+						borderBottomStyle       : 'solid',
+						borderBottomWidth       : '0',
+						borderLeftColor         : 'black',
+						borderLeftStyle         : 'solid',
+						borderLeftWidth         : '1px',
+						borderRightColor        : 'black',
+						borderRightStyle        : 'solid',
+						borderRightWidth        : '1px',
+						borderTopColor          : 'black',
+						borderTopLeftRadius     : '12px',
+						borderTopRightRadius    : '12px',
+						borderTopStyle          : 'solid',
+						borderTopWidth          : '1px',
+
 						cursor      : 'pointer',
 						listStyle   : 'none',
-						padding     : '12px',
 
-						borderRadius : '12px 12px 0 0',
+						paddingLeft   : '12px',
+						paddingRight  : '12px',
+						paddingTop    : '12px',
+						paddingBottom : '12px',
 
 						':hover':
 						{
@@ -709,14 +788,30 @@ menu
 
 					':last':
 					{
-						borderColor : 'black',
-						borderStyle : 'solid',
+						borderBottomColor       : 'black',
+						borderBottomLeftRadius  : '12px',
+						borderBottomRightRadius : '12px',
+						borderBottomStyle       : 'solid',
+						borderBottomWidth       : '1px',
+						borderLeftColor         : 'black',
+						borderLeftStyle         : 'solid',
+						borderLeftWidth         : '1px',
+						borderRightColor        : 'black',
+						borderRightStyle        : 'solid',
+						borderRightWidth        : '1px',
+						borderTopColor          : 'black',
+						borderTopLeftRadius     : '0',
+						borderTopRightRadius    : '0',
+						borderTopStyle          : 'solid',
+						borderTopWidth          : '1px',
+
 						cursor      : 'pointer',
 						listStyle   : 'none',
-						padding     : '12px',
-
-						borderRadius : '0 0 12px 12px',
-						borderWidth  : '1px',
+						
+						paddingLeft   : '12px',
+						paddingRight  : '12px',
+						paddingTop    : '12px',
+						paddingBottom : '12px',
 
 						':hover':
 						{
@@ -769,7 +864,19 @@ menu
 
 				item:
 				{
-					border : 'none',
+					borderBottomColor : 'initial',
+					borderBottomStyle : 'none',
+					borderBottomWidth : 'initial',
+					borderLeftColor   : 'initial',
+					borderLeftStyle   : 'none',
+					borderLeftWidth   : 'initial',
+					borderRightColor  : 'initial',
+					borderRightStyle  : 'none',
+					borderRightWidth  : 'initial',
+					borderTopColor    : 'initial',
+					borderTopStyle    : 'none',
+					borderTopWidth    : 'initial',
+
 					color  : 'black',
 
 					item_link:
@@ -789,14 +896,38 @@ menu
 
 					item:
 					{
-						border     : 'none',
+						borderBottomColor : 'initial',
+						borderBottomStyle : 'none',
+						borderBottomWidth : 'initial',
+						borderLeftColor   : 'initial',
+						borderLeftStyle   : 'none',
+						borderLeftWidth   : 'initial',
+						borderRightColor  : 'initial',
+						borderRightStyle  : 'none',
+						borderRightWidth  : 'initial',
+						borderTopColor    : 'initial',
+						borderTopStyle    : 'none',
+						borderTopWidth    : 'initial',
+
 						color      : 'white',
 						background : 'black',
 
 						item_link:
 						{
 							textDecoration : 'none',
-							border         : '1px',
+
+							borderBottomColor : 'initial',
+							borderBottomStyle : 'initial',
+							borderBottomWidth : '1px',
+							borderLeftColor   : 'initial',
+							borderLeftStyle   : 'initial',
+							borderLeftWidth   : '1px',
+							borderRightColor  : 'initial',
+							borderRightStyle  : 'initial',
+							borderRightWidth  : '1px',
+							borderTopColor    : 'initial',
+							borderTopStyle    : 'initial',
+							borderTopWidth    : '1px',
 
 							':hover':
 							{

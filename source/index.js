@@ -1,5 +1,6 @@
 import { exists, starts_with, ends_with, is_blank, zip, extend, not_empty } from './helpers'
 import Tabulator from './tabulator'
+import StyleBuilder from 'style-builder';
 
 // using ES6 template strings
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/template_strings
@@ -40,8 +41,11 @@ function parse_style_json_object(text)
 	// parse text into JSON object
 	const style_json = parse_style_class(tabulator.extract_tabulation(lines), [])
 
+	// expand css shorthand properties
+	const expanded_style_json = StyleBuilder.build(style_json)
+
 	// expand "modifier" style classes
-	return expand_modifier_style_classes(style_json)
+	return expand_modifier_style_classes(expanded_style_json)
 }
 
 // parse child nodes' lines (and this node's styles) into this node's style JSON object
