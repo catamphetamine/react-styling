@@ -1,9 +1,17 @@
 import { exists, starts_with, ends_with, is_blank, zip, extend, not_empty } from './helpers'
 import Tabulator from './tabulator'
+import style_builder from 'style-builder'
 
 // using ES6 template strings
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/template_strings
 export default function(strings, ...values)
+{
+	return styler(strings, values)
+}
+
+// (the main function)
+// Parses CSS into a JSON object
+export function styler(strings, values, options = {})
 {
 	let style = ''
 
@@ -19,11 +27,11 @@ export default function(strings, ...values)
 		i++
 	}
 
-	return parse_style_json_object(style)
+	return parse_style_json_object(style, options)
 }
 
 // converts text to JSON object
-function parse_style_json_object(text)
+function parse_style_json_object(text, options)
 {
 	// remove multiline comments
 	text = text.replace(/\/\*([\s\S]*?)\*\//g, '')
@@ -38,9 +46,17 @@ function parse_style_json_object(text)
 	const tabulator = new Tabulator(Tabulator.determine_tabulation(lines))
 
 	// parse text into JSON object
-	const style_json = parse_style_class(tabulator.extract_tabulation(lines), [])
+	let style_json = parse_style_class(tabulator.extract_tabulation(lines), [])
+
+	// expand CSS shorthand properties
+	// (e.g. `margin: 1px` -> `margin-left: 1px; ...`)
+	if (options.expand)
+	{
+		style_json = style_builder.build(style_json)
+	}
 
 	// expand "modifier" style classes
+	// (which can override some of the expanded shorthand CSS properties)
 	return expand_modifier_style_classes(style_json)
 }
 

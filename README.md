@@ -313,6 +313,35 @@ original:
 }
 ```
 
+### Shorthand style property expansion
+
+[A request was made](https://github.com/halt-hammerzeit/react-styling/issues/3) to [add](https://github.com/halt-hammerzeit/react-styling/pull/4) shorthand style property expansion feature to this library. The motivation is that when writing a CSS rule like `border: 1px solid red` in a base class and then overriding it with `border-color: blue` in some modifier class (like `:hover`) it's all merged correctly both when `:hover` is added and when `:hover` is removed. In React though, style rule update algorythm is not nearly that straightforward and bulletproof, and is in fact [a very basic one](https://github.com/facebook/react/issues/5397) which results in React not handling shorhand CSS property updates correctly. In these cases a special flavour of `react-styling` can be used:
+
+```js
+import styler from 'react-styling/expanded'
+
+styler `
+  margin: 10px
+  border: 1px solid red
+`
+```
+
+Which results in the following style object
+
+```js
+{
+  marginTop    : '10px',
+  marginBottom : '10px',
+  marginLeft   : '10px',
+  marginRight  : '10px',
+
+  borderTopWidth: '1px',
+  borderTopStyle: 'solid',
+  borderTopColor: 'red',
+  // etc
+}
+```
+
 ### Radium
 
 There's a (popular) thing called [Radium](https://github.com/FormidableLabs/radium), which allows you to (citation):

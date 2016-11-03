@@ -1,3 +1,8 @@
+1.6.0 / 03.11.2016
+==================
+
+  * Added `react-styling/expanded` for CSS shorthand properties autoexpansion (contributed by @pwlmaciejewski). E.g. `margin: 1px` -> `margin-left: 1px; ...`.
+
 1.5.0 / 30.04.2016
 ===================
 
