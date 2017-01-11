@@ -256,7 +256,7 @@ You can use both one-line comments and multiline comments.
 
 ### Nesting
 
-In the example above the result is a JSON object with a nested tree of CSS style classes. You can flatten it if you like by using `import styler from 'react-styling/flat'` instead of the default `import styler from 'react-styling'`.
+In the example above the result is a JSON object with a nested tree of CSS style classes. You can flatten it if you like by using `import { flat as styler } from 'react-styling'` instead of the default `import styler from 'react-styling'`.
 
 The difference is that the flat styler will flatten the CSS style class tree by prefixing all the style class names accordingly. 
 
@@ -318,7 +318,7 @@ original:
 [A request was made](https://github.com/halt-hammerzeit/react-styling/issues/3) to [add](https://github.com/halt-hammerzeit/react-styling/pull/4) shorthand style property expansion feature to this library. The motivation is that when writing a CSS rule like `border: 1px solid red` in a base class and then overriding it with `border-color: blue` in some modifier class (like `:hover`) it's all merged correctly both when `:hover` is added and when `:hover` is removed. In React though, style rule update algorythm is not nearly that straightforward and bulletproof, and is in fact [a very basic one](https://github.com/facebook/react/issues/5397) which results in React not handling shorhand CSS property updates correctly. In these cases a special flavour of `react-styling` can be used:
 
 ```js
-import styler from 'react-styling/expanded'
+import { expanded as styler } from 'react-styling'
 
 styler `
   margin: 10px
@@ -356,8 +356,9 @@ You can use react-styling with this Radium library too: write you styles in text
 Here is the [DroidList example](https://github.com/FormidableLabs/radium/tree/master/docs/faq#how-do-i-use-pseudo-selectors-like-checked-or-last) from Radium FAQ rewritten using react-styling. Because `first` and `last` are "modifiers" here the `:hover` pseudo-class will be present inside each of them as well.
 
 ```javascript
-// notice the use of the "/flat" styler as opposed to the default one
-import styler from 'react-styling/flat'
+// Notice the use of the "flat" styler as opposed to the default one:
+// it flattens the nested style object into a shallow style object.
+import { flat as styler } from 'react-styling'
 
 var droids = [
   'R2-D2',

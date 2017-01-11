@@ -1,1 +1,1 @@
-module.exports = require('./babel-transpiled-modules/flat')
+module.exports = require('./build/flat').default

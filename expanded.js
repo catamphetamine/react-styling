@@ -1,1 +1,1 @@
-module.exports = require('./babel-transpiled-modules/expanded')
+module.exports = require('./build/expanded').default

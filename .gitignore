@@ -26,7 +26,8 @@ npm-debug.log
 *.sublime-workspace
 
 # webpack build target folder
-/babel-transpiled-modules/
+/build/
+/es6/
 
 # NUL
 NUL
