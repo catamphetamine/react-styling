@@ -1,13 +1,9 @@
 # react-styling
 
-[![NPM Version][npm-image]][npm-url]
-[![NPM Downloads][downloads-image]][downloads-url]
-[![Build Status][travis-image]][travis-url]
-[![Test Coverage][coveralls-image]][coveralls-url]
-
-<!---
-[![Gratipay][gratipay-image]][gratipay-url]
--->
+[![npm version](https://img.shields.io/npm/v/react-styling.svg?style=flat-square)](https://www.npmjs.com/package/react-styling)
+[![npm downloads](https://img.shields.io/npm/dm/react-styling.svg?style=flat-square)](https://www.npmjs.com/package/react-styling)
+[![build status](https://img.shields.io/travis/halt-hammerzeit/react-styling/master.svg?style=flat-square)](https://travis-ci.org/halt-hammerzeit/react-styling)
+[![coverage](https://img.shields.io/coveralls/halt-hammerzeit/react-styling/master.svg?style=flat-square)](https://coveralls.io/r/halt-hammerzeit/react-styling?branch=master)
 
 Is a helper function to convert various CSS syntaxes into a React style JSON object
 
@@ -459,16 +455,3 @@ npm install [module name with version].tar.gz
 ## License
 
 [MIT](LICENSE)
-[npm-image]: https://img.shields.io/npm/v/react-styling.svg
-[npm-url]: https://npmjs.org/package/react-styling
-[travis-image]: https://img.shields.io/travis/halt-hammerzeit/react-styling/master.svg
-[travis-url]: https://travis-ci.org/halt-hammerzeit/react-styling
-[downloads-image]: https://img.shields.io/npm/dm/react-styling.svg
-[downloads-url]: https://npmjs.org/package/react-styling
-[coveralls-image]: https://img.shields.io/coveralls/halt-hammerzeit/react-styling/master.svg
-[coveralls-url]: https://coveralls.io/r/halt-hammerzeit/react-styling?branch=master
-
-<!---
-[gratipay-image]: https://img.shields.io/gratipay/dougwilson.svg
-[gratipay-url]: https://gratipay.com/dougwilson/
--->
