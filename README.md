@@ -7,30 +7,9 @@
 
 Is a helper function to convert various CSS syntaxes into a React style JSON object
 
-## Motivation
+## Autoprefixing
 
-At first when I heard about "that React thing" a couple of years earlier I opened their website,
-looked at the docs, saw the JSX syntax and said "wtf? who still does that? i'm not gonna ever use this, lol".
-
-The same was the public's reaction at the first presentation of React:
-
-[React.js Conf 2015 Keynote - Introducing React Native, 8:37](https://www.youtube.com/watch?v=KVZ-P-ZI6W4#t=517)
-
-Okay, time passed, and after a couple of years I turned to React again and now I seemed to like it (and now I like it much more).
-
-Then I saw that presentation by Christopher "vjeux" Chedeau
-
-[React: CSS in JS by vjeux](https://speakerdeck.com/vjeux/react-css-in-js)
-
-And I was again like "ummm, I'm not sure... do we really need to write our styles here too? what about web designers?"
-
-[React.js Conf 2015 Keynote 2 - A Deep Dive into React Native, 9:14](https://www.youtube.com/watch?v=7rDsRXj9-cU#t=554)
-
-And now, as you've already guessed, I'm writing my styles inline in my React components and I like it. As I see it, one should put generic styling (like body, h1, a, p, button, etc) into the main .css file and then put all the specific styles into the corresponding React components inline.
-
-But still it was a bit of a hassle: you have your muscular memory of writing CSS, and now you need to write it all in JSON format with all those quotes which are difficult to reach with your pinkie (oh, and you missed one there, and your IDE automatically inserted an erroneous couple there, and now your syntax highlighting is broken), and commas (oh, you missed that one too, go figure; gosh, they still have commas in JSON objects in ES6 in the XXI'st century), and that camelCase (I don't like "borderBottomRadius", I don't like camelCase at all).
-
-So I wrote this little module. All it does is it takes your CSS-alike text and transforms it to a valid JSON style object for your React components. It's simple and tiny. The syntax is clear and uncluttered. The module itself is unobtrusive and unopinionated (if you think it is go create an issue or a pull request).
+This library doesn't perform CSS autoprefixing. Use [postcss autoprefixer](https://github.com/postcss/postcss-js) for that.
 
 ## Installation
 
