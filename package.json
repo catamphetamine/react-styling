@@ -1,6 +1,6 @@
 {
   "name": "react-styling",
-  "version": "1.6.3",
+  "version": "1.6.4",
   "description": "Transforms CSS-alike text into a React style JSON object",
   "main": "index.common.js",
   "module": "index.es6.js",
@@ -61,7 +61,7 @@
     "inline",
     "css"
   ],
-  "author": "catamphetamine <catamphetamine@gmail.com>",
+  "author": "catamphetamine <purecatamphetamine@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/catamphetamine/react-styling/issues"
