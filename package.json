@@ -1,6 +1,6 @@
 {
   "name": "react-styling",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "description": "Transforms CSS-alike text into a React style JSON object",
   "main": "index.common.js",
   "module": "index.es6.js",
@@ -53,7 +53,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/halt-hammerzeit/react-styling.git"
+    "url": "git+https://github.com/catamphetamine/react-styling.git"
   },
   "keywords": [
     "react",
@@ -61,10 +61,10 @@
     "inline",
     "css"
   ],
-  "author": "Halt Hammerzeit <halt.hammerzeit.at@gmail.com>",
+  "author": "catamphetamine <catamphetamine@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/halt-hammerzeit/react-styling/issues"
+    "url": "https://github.com/catamphetamine/react-styling/issues"
   },
-  "homepage": "https://github.com/halt-hammerzeit/react-styling#readme"
+  "homepage": "https://github.com/catamphetamine/react-styling#readme"
 }

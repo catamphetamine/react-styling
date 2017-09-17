@@ -2,8 +2,8 @@
 
 [![npm version](https://img.shields.io/npm/v/react-styling.svg?style=flat-square)](https://www.npmjs.com/package/react-styling)
 [![npm downloads](https://img.shields.io/npm/dm/react-styling.svg?style=flat-square)](https://www.npmjs.com/package/react-styling)
-[![build status](https://img.shields.io/travis/halt-hammerzeit/react-styling/master.svg?style=flat-square)](https://travis-ci.org/halt-hammerzeit/react-styling)
-[![coverage](https://img.shields.io/coveralls/halt-hammerzeit/react-styling/master.svg?style=flat-square)](https://coveralls.io/r/halt-hammerzeit/react-styling?branch=master)
+[![build status](https://img.shields.io/travis/catamphetamine/react-styling/master.svg?style=flat-square)](https://travis-ci.org/catamphetamine/react-styling)
+[![coverage](https://img.shields.io/coveralls/catamphetamine/react-styling/master.svg?style=flat-square)](https://coveralls.io/r/catamphetamine/react-styling?branch=master)
 
 Is a helper function to convert various CSS syntaxes into a React style JSON object
 
@@ -243,7 +243,7 @@ Also, I noticed that React, given a style object containing child style objects,
 
 In the example above, notice the ampersand before the "current" style class - this feature is optional (you don't need to use it at all), and it means that this style class is a "modifier" and all the style from its parent style class will be included in this style class. In this example, the padding, color, display and text-decoration from the "link" style class will be included in the "current" style class, so it works just like LESS/SASS ampersand. If you opt in to using the "modifiers" feature then you won't need to do manual merging like `style="extend({}, style.menu.item.link, style.menu.item.link.current)"`.
 
-Modifiers, when populated with the parent's styles, will also be populated with all the parent's pseudo-classes (those ones starting with a colon) and media queries (those ones starting with an at). This is done for better and seamless integration with [Radium](https://github.com/halt-hammerzeit/react-styling#radium).
+Modifiers, when populated with the parent's styles, will also be populated with all the parent's pseudo-classes (those ones starting with a colon) and media queries (those ones starting with an at). This is done for better and seamless integration with [Radium](https://github.com/catamphetamine/react-styling#radium).
 
 Modifiers are applied all the way down to the bottom of the style subtree and, therefore, all the child styles are "modified" too. For example, this stylesheet
 
@@ -290,7 +290,7 @@ original:
 
 ### Shorthand style property expansion
 
-[A request was made](https://github.com/halt-hammerzeit/react-styling/issues/3) to [add](https://github.com/halt-hammerzeit/react-styling/pull/4) shorthand style property expansion feature to this library. The motivation is that when writing a CSS rule like `border: 1px solid red` in a base class and then overriding it with `border-color: blue` in some modifier class (like `:hover`) it's all merged correctly both when `:hover` is added and when `:hover` is removed. In React though, style rule update algorythm is not nearly that straightforward and bulletproof, and is in fact [a very basic one](https://github.com/facebook/react/issues/5397) which results in React not handling shorhand CSS property updates correctly. In these cases a special flavour of `react-styling` can be used:
+[A request was made](https://github.com/catamphetamine/react-styling/issues/3) to [add](https://github.com/catamphetamine/react-styling/pull/4) shorthand style property expansion feature to this library. The motivation is that when writing a CSS rule like `border: 1px solid red` in a base class and then overriding it with `border-color: blue` in some modifier class (like `:hover`) it's all merged correctly both when `:hover` is added and when `:hover` is removed. In React though, style rule update algorythm is not nearly that straightforward and bulletproof, and is in fact [a very basic one](https://github.com/facebook/react/issues/5397) which results in React not handling shorhand CSS property updates correctly. In these cases a special flavour of `react-styling` can be used:
 
 ```js
 import { expanded as styler } from 'react-styling'
